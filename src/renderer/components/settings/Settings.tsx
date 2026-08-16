@@ -11,7 +11,7 @@ import { BaseText, Divider, ErrorBoundary } from "@vencord/types/components";
 import { ComponentType } from "react";
 import { WebRTCIPHandlingPolicyPicker } from "renderer/components/settings/WebRTCIPHandlingPolicyPicker";
 import { getValueAndOnChange, Settings, useSettings } from "renderer/settings";
-import { isMac } from "renderer/utils";
+import { isLinux, isMac } from "renderer/utils";
 
 import { AutoStartToggle } from "./AutoStartToggle";
 import { DeveloperOptionsButton } from "./DeveloperOptions";
@@ -133,6 +133,13 @@ const SettingsOptions: Record<string, Array<BooleanSetting | SettingsComponent>>
         }
     ],
     Miscellaneous: [
+        {
+            key: "gameCapture",
+            title: "Game Capture",
+            description:
+                "Offer games started with OBS_VKCAPTURE=1 as screenshare sources. Only one program can capture at a time, so turn this off to use OBS' Game Capture.",
+            invisible: () => !isLinux
+        },
         {
             key: "arRPC",
             title: "Rich Presence",

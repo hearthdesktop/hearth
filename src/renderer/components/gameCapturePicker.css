@@ -8,18 +8,17 @@
 
 .vcd-game-picker-hint {
     margin-bottom: 1em;
-    color: var(--text-muted);
 }
 
 .vcd-game-picker-list {
     display: grid;
     gap: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 .vcd-game-picker-game {
     display: flex;
     align-items: center;
-    gap: 0.75em;
     padding: 0.75em 1em;
     box-sizing: border-box;
     cursor: pointer;
@@ -30,18 +29,10 @@
 }
 
 .vcd-game-picker-name {
+    font-weight: 600;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-weight: 600;
-}
-
-.vcd-game-picker-badge {
-    margin-left: auto;
-    color: var(--text-muted);
-    font-size: 0.8em;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
 }
 
 .vcd-game-picker-footer {

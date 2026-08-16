@@ -24,6 +24,7 @@ export const DefaultVesktopSettings: Settings = {
     disableSmoothScroll: false,
     enableTaskbarFlashing: false,
     arRPC: true,
+    gameCapture: true,
     openLinksWithElectron: false,
     autoStartMinimized: false,
     splashPixelated: false,

@@ -26,6 +26,8 @@ export interface Settings {
     hardwareAcceleration: boolean;
     hardwareVideoAcceleration: boolean;
     arRPC: boolean;
+    /** linux only: offer obs-vkcapture games as screenshare sources */
+    gameCapture: boolean;
     appBadge: boolean;
     enableTaskbarFlashing: boolean;
     disableMinSize: boolean;

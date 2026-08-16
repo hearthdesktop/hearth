@@ -51,17 +51,19 @@ function ModalComponent({
                             className={cl("game")}
                             onClick={() => submit({ type: "game", exe: game.exe })}
                         >
-                            <span className={cl("name")}>{game.exe}</span>
-                            <span className={cl("badge")}>Game Capture</span>
+                            <Paragraph className={cl("name")}>{game.exe}</Paragraph>
                         </Card>
                     ))}
                 </div>
             </Modals.ModalContent>
 
             <Modals.ModalFooter className={cl("footer")}>
-                <Button onClick={() => submit({ type: "desktop" })}>Share a Screen or Window Instead</Button>
+                {/* picking a game is the primary action, so the fallback stays quiet */}
                 <Button variant="secondary" onClick={close}>
                     Cancel
+                </Button>
+                <Button variant="secondary" onClick={() => submit({ type: "desktop" })}>
+                    Screen or Window Instead
                 </Button>
             </Modals.ModalFooter>
         </Modals.ModalRoot>

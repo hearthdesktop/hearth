@@ -9,6 +9,7 @@ import { join } from "path";
 import { IpcEvents } from "shared/IpcEvents";
 
 import { mainWin } from "../mainWindow";
+import { Settings } from "../settings";
 import { handle } from "../utils/ipcWrappers";
 
 export interface GameCaptureClient {
@@ -60,7 +61,17 @@ function request<T>(message: any, expect: string, timeoutMs = 3000): Promise<T> 
     );
 }
 
+function enabled() {
+    return Settings.store.gameCapture ?? true;
+}
+
+export function releaseGameCapture() {
+    child?.postMessage({ type: "release" });
+}
+
 export async function listGameCaptureClients(): Promise<GameCaptureClient[]> {
+    if (!enabled()) return [];
+
     const res = await request<{ clients?: GameCaptureClient[]; error?: string }>({ type: "list" }, "clients");
     if (res.error) console.error("[gameCapture]", res.error);
     if (IS_DEV)
@@ -102,6 +113,12 @@ export function registerGameCaptureHandlers() {
     // Bind the socket early so games are already connected by the time someone
     // hits share - otherwise the first list races their once-a-second retry.
     listGameCaptureClients().catch(() => {});
+
+    // only one program can hold the capture socket, so give it back when asked to
+    Settings.addChangeListener("gameCapture", value => {
+        if (value === false) releaseGameCapture();
+        else listGameCaptureClients().catch(() => {});
+    });
 
     handle(IpcEvents.GAME_CAPTURE_LIST, () => listGameCaptureClients());
     handle(IpcEvents.GAME_CAPTURE_START, (_e, opts) => startGameCapture(opts));

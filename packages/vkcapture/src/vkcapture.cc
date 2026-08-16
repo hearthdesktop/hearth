@@ -202,6 +202,7 @@ class Capturer
     int pboIndex_ = 0;
     bool pboPrimed_ = false;
     size_t frameBytes_ = 0;
+    int allocW_ = 0, allocH_ = 0;
 
     PFNEGLCREATEIMAGEKHRPROC pCreateImage_ = nullptr;
     PFNEGLDESTROYIMAGEKHRPROC pDestroyImage_ = nullptr;
@@ -613,7 +614,20 @@ bool Capturer::renderAndRead(std::vector<uint8_t> &out)
     const int packW = outW_ / 4;
     const int packH = outH_ * 3 / 2;
 
+    // the target has to follow the requested size, or a second session at a
+    // different resolution would keep rendering into the old one
+    if (fbo_ && (allocW_ != outW_ || allocH_ != outH_)) {
+        glDeleteFramebuffers(1, &fbo_);
+        glDeleteTextures(1, &fboTex_);
+        glDeleteBuffers(2, pbo_);
+        fbo_ = fboTex_ = 0;
+        pbo_[0] = pbo_[1] = 0;
+        pboPrimed_ = false;
+    }
+
     if (!fbo_) {
+        allocW_ = outW_;
+        allocH_ = outH_;
         frameBytes_ = (size_t)outW_ * outH_ * 3 / 2;
         glGenTextures(1, &fboTex_);
         glBindTexture(GL_TEXTURE_2D, fboTex_);

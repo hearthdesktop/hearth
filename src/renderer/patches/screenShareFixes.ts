@@ -6,8 +6,8 @@
 
 import { Logger } from "@vencord/types/utils";
 import { openGameCapturePicker } from "renderer/components/GameCapturePicker";
-import { currentSettings } from "renderer/components/ScreenSharePicker";
-import { createGameCaptureStream } from "renderer/patches/gameCapture";
+import { currentSettings, openScreenSharePicker } from "renderer/components/ScreenSharePicker";
+import { captureGamePreview, createGameCaptureStream } from "renderer/patches/gameCapture";
 import { State } from "renderer/settings";
 import { isLinux } from "renderer/utils";
 
@@ -39,12 +39,24 @@ if (isLinux) {
             if (pick.type === "desktop") VesktopNative.gameCapture.stop();
 
             if (pick.type === "game") {
+                // reuse Vesktop's own settings step, so quality, content hint and
+                // the venmic audio sources all behave exactly as they do normally
+                const preview = await captureGamePreview(pick.exe);
+                const streamSettings = await openScreenSharePicker(
+                    [{ id: `vesktop-game:${pick.exe}`, name: pick.exe, url: preview ?? "" }],
+                    true,
+                    `Share ${pick.exe}`
+                ).catch(() => null);
+                if (!streamSettings) throw new DOMException("Permission denied", "NotAllowedError");
+
                 const height = Number(State.store.screenshareQuality?.resolution ?? 720);
                 return createGameCaptureStream({
                     exe: pick.exe,
                     width: Math.round(height * (16 / 9)),
                     height,
-                    fps: Number(State.store.screenshareQuality?.frameRate ?? 30)
+                    fps: Number(State.store.screenshareQuality?.frameRate ?? 30),
+                    audio: streamSettings.audio,
+                    contentHint: streamSettings.contentHint
                 });
             }
         }

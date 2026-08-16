@@ -143,7 +143,7 @@ if (isLinux) {
     });
 }
 
-export function openScreenSharePicker(screens: Source[], skipPicker: boolean) {
+export function openScreenSharePicker(screens: Source[], skipPicker: boolean, title?: string) {
     let didSubmit = false;
     return new Promise<StreamPick>((resolve, reject) => {
         const key = openModal(
@@ -171,6 +171,7 @@ export function openScreenSharePicker(screens: Source[], skipPicker: boolean) {
                         if (!didSubmit) reject("Aborted");
                     }}
                     skipPicker={skipPicker}
+                    title={title}
                 />
             ),
             {
@@ -585,7 +586,7 @@ function AudioSourcePickerLinux({
     if (!sources.ok && sources.isGlibCxxOutdated) {
         return (
             <Paragraph>
-                Failed to retrieve Audio Sources because your C++ library is too old to run
+                Failed to retrieve Audio Sources because your C++ library is too old to run{" "}
                 <a href="https://github.com/Vencord/venmic" target="_blank" rel="noreferrer">
                     venmic
                 </a>
@@ -696,13 +697,15 @@ function ModalComponent({
     modalProps,
     submit,
     close,
-    skipPicker
+    skipPicker,
+    title
 }: {
     screens: Source[];
     modalProps: any;
     submit: (data: StreamPick) => void;
     close: () => void;
     skipPicker: boolean;
+    title?: string;
 }) {
     const [selected, setSelected] = useState<string | undefined>(skipPicker ? screens[0].id : void 0);
     const [settings, setSettings] = useState<StreamSettings>({
@@ -776,7 +779,7 @@ function ModalComponent({
         <Modal
             {...modalProps}
             size="lg"
-            title="Screen Share Picker"
+            title={title ?? "Screen Share Picker"}
             actions={[
                 {
                     text: showGoBack ? "Back" : "Cancel",

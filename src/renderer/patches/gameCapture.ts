@@ -14,28 +14,29 @@ interface FrameMessage {
 }
 
 // The port arrives from the preload, which relays it out of the isolated world
-let portPromise: Promise<MessagePort> | null = null;
 let pendingPort: MessagePort | null = null;
+const portResolvers: ((port: MessagePort) => void)[] = [];
 
 window.addEventListener("message", e => {
     if (e.source !== window || e.data?.type !== "VESKTOP_GAME_CAPTURE_PORT") return;
-    pendingPort = e.ports[0];
-    portResolvers.splice(0).forEach(r => r(pendingPort!));
+    const port = e.ports[0];
+    const waiting = portResolvers.splice(0);
+    if (waiting.length) waiting.forEach(r => r(port));
+    else pendingPort = port;
 });
 
-const portResolvers: ((port: MessagePort) => void)[] = [];
+/**
+ * Every start() posts a fresh port, so a leftover one from a previous session
+ * (the preview grab, say) has to be dropped rather than handed out again.
+ */
+function awaitPort(timeoutMs = 5000): Promise<MessagePort> {
+    pendingPort?.close();
+    pendingPort = null;
 
-function nextPort(timeoutMs = 5000): Promise<MessagePort> {
-    if (pendingPort) {
-        const port = pendingPort;
-        pendingPort = null;
-        return Promise.resolve(port);
-    }
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error("capture port never arrived")), timeoutMs);
         portResolvers.push(port => {
             clearTimeout(timer);
-            pendingPort = null;
             resolve(port);
         });
     });
@@ -46,6 +47,57 @@ export interface GameCaptureOptions {
     width: number;
     height: number;
     fps: number;
+    audio?: boolean;
+    contentHint?: string;
+}
+
+/**
+ * Grabs a single small frame so the picker can show what the game looks like.
+ * Returns null rather than blocking the picker if the game doesn't produce one.
+ */
+export async function captureGamePreview(exe: string, timeoutMs = 2500): Promise<string | null> {
+    if (typeof MediaStreamTrackGenerator === "undefined") return null;
+
+    try {
+        const portArrival = awaitPort(timeoutMs);
+        await VesktopNative.gameCapture.start({ exe, width: 640, height: 360, fps: 15 });
+        const port = await portArrival;
+
+        const dataUrl = await new Promise<string | null>(resolve => {
+            const timer = setTimeout(() => resolve(null), timeoutMs);
+
+            port.onmessage = (e: MessageEvent<FrameMessage>) => {
+                clearTimeout(timer);
+                const { data, meta } = e.data;
+                try {
+                    const frame = new VideoFrame(data, {
+                        format: "I420",
+                        codedWidth: meta.width,
+                        codedHeight: meta.height,
+                        timestamp: 0
+                    });
+                    const canvas = document.createElement("canvas");
+                    canvas.width = meta.width;
+                    canvas.height = meta.height;
+                    canvas.getContext("2d")!.drawImage(frame, 0, 0);
+                    frame.close();
+                    resolve(canvas.toDataURL("image/jpeg", 0.85));
+                } catch (err) {
+                    logger.error("failed to build preview frame", err);
+                    resolve(null);
+                }
+            };
+            port.start();
+        });
+
+        port.close();
+        VesktopNative.gameCapture.stop();
+        return dataUrl;
+    } catch (err) {
+        logger.warn("preview capture failed", err);
+        VesktopNative.gameCapture.stop();
+        return null;
+    }
 }
 
 /**
@@ -56,11 +108,17 @@ export async function createGameCaptureStream(opts: GameCaptureOptions): Promise
     if (typeof MediaStreamTrackGenerator === "undefined")
         throw new Error("this build of Electron has no MediaStreamTrackGenerator");
 
-    portPromise = nextPort();
-    await VesktopNative.gameCapture.start(opts);
-    const port = await portPromise;
+    const portArrival = awaitPort();
+    await VesktopNative.gameCapture.start({
+        exe: opts.exe,
+        width: opts.width,
+        height: opts.height,
+        fps: opts.fps
+    });
+    const port = await portArrival;
 
     const generator = new MediaStreamTrackGenerator({ kind: "video" });
+    generator.contentHint = opts.contentHint ?? "motion";
     const writer = generator.writable.getWriter();
 
     let base = 0;
@@ -103,6 +161,8 @@ export async function createGameCaptureStream(opts: GameCaptureOptions): Promise
     const stream = new MediaStream([generator]);
 
     // mirror the audio behaviour of the normal screenshare path
+    if (opts.audio === false) return stream;
+
     try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const virtmic = devices.find(({ label }) => label === "vencord-screen-share");
