@@ -5,6 +5,7 @@
  */
 
 import { Logger } from "@vencord/types/utils";
+import { waitForVirtmicDevice } from "renderer/utils";
 
 const logger = new Logger("VesktopGameCapture");
 
@@ -115,9 +116,10 @@ export async function createGameCaptureStream(opts: GameCaptureOptions): Promise
     if (opts.audio === false) return stream;
 
     try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const virtmic = devices.find(({ label }) => label === "vencord-screen-share");
-        if (virtmic) {
+        const virtmic = await waitForVirtmicDevice();
+        if (!virtmic) {
+            logger.warn("virtmic device never appeared, sharing without audio");
+        } else {
             const audio = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     deviceId: { exact: virtmic.deviceId },
@@ -132,7 +134,7 @@ export async function createGameCaptureStream(opts: GameCaptureOptions): Promise
             audio.getAudioTracks().forEach(t => stream.addTrack(t));
         }
     } catch (err) {
-        logger.warn("no screenshare audio source", err);
+        logger.warn("could not attach screenshare audio", err);
     }
 
     return stream;

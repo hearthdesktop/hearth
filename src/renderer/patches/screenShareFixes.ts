@@ -9,7 +9,7 @@ import { openGameCapturePicker } from "renderer/components/GameCapturePicker";
 import { currentSettings, openScreenSharePicker } from "renderer/components/ScreenSharePicker";
 import { createGameCaptureStream } from "renderer/patches/gameCapture";
 import { State } from "renderer/settings";
-import { isLinux } from "renderer/utils";
+import { isLinux, waitForVirtmicDevice } from "renderer/utils";
 
 const logger = new Logger("VesktopStreamFixes");
 
@@ -18,8 +18,8 @@ if (isLinux) {
 
     async function getVirtmic() {
         try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const audioDevice = devices.find(({ label }) => label === "vencord-screen-share");
+            const audioDevice = await waitForVirtmicDevice();
+            if (!audioDevice) logger.warn("virtmic device never appeared, sharing without audio");
             return audioDevice?.deviceId;
         } catch (error) {
             return null;
