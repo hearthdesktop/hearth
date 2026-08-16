@@ -72,6 +72,8 @@ interface Source {
     id: string;
     name: string;
     url: string;
+    /** live preview, used instead of the thumbnail when the source can provide one */
+    stream?: MediaStream;
 }
 
 export let currentSettings: StreamSettings | null = null;
@@ -388,7 +390,19 @@ function StreamSettingsUi({
         <div>
             <HeadingTertiary className={Margins.bottom8}>What you're streaming</HeadingTertiary>
             <Card className={cl("card", "preview")}>
-                <img src={thumb} alt="" className={cl(isLinux ? "preview-img-linux" : "preview-img")} />
+                {source.stream ? (
+                    <video
+                        className={cl(isLinux ? "preview-img-linux" : "preview-img")}
+                        autoPlay
+                        muted
+                        playsInline
+                        ref={el => {
+                            if (el && el.srcObject !== source.stream) el.srcObject = source.stream!;
+                        }}
+                    />
+                ) : (
+                    <img src={thumb} alt="" className={cl(isLinux ? "preview-img-linux" : "preview-img")} />
+                )}
                 <Paragraph>{source.name}</Paragraph>
             </Card>
 

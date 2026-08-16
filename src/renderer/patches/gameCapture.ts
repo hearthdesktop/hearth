@@ -52,55 +52,6 @@ export interface GameCaptureOptions {
 }
 
 /**
- * Grabs a single small frame so the picker can show what the game looks like.
- * Returns null rather than blocking the picker if the game doesn't produce one.
- */
-export async function captureGamePreview(exe: string, timeoutMs = 2500): Promise<string | null> {
-    if (typeof MediaStreamTrackGenerator === "undefined") return null;
-
-    try {
-        const portArrival = awaitPort(timeoutMs);
-        await VesktopNative.gameCapture.start({ exe, width: 640, height: 360, fps: 15 });
-        const port = await portArrival;
-
-        const dataUrl = await new Promise<string | null>(resolve => {
-            const timer = setTimeout(() => resolve(null), timeoutMs);
-
-            port.onmessage = (e: MessageEvent<FrameMessage>) => {
-                clearTimeout(timer);
-                const { data, meta } = e.data;
-                try {
-                    const frame = new VideoFrame(data, {
-                        format: "I420",
-                        codedWidth: meta.width,
-                        codedHeight: meta.height,
-                        timestamp: 0
-                    });
-                    const canvas = document.createElement("canvas");
-                    canvas.width = meta.width;
-                    canvas.height = meta.height;
-                    canvas.getContext("2d")!.drawImage(frame, 0, 0);
-                    frame.close();
-                    resolve(canvas.toDataURL("image/jpeg", 0.85));
-                } catch (err) {
-                    logger.error("failed to build preview frame", err);
-                    resolve(null);
-                }
-            };
-            port.start();
-        });
-
-        port.close();
-        VesktopNative.gameCapture.stop();
-        return dataUrl;
-    } catch (err) {
-        logger.warn("preview capture failed", err);
-        VesktopNative.gameCapture.stop();
-        return null;
-    }
-}
-
-/**
  * Frames come from the game's own swapchain rather than the compositor, so a
  * fullscreen game keeps direct scanout while sharing.
  */

@@ -7,7 +7,7 @@
 import { Logger } from "@vencord/types/utils";
 import { openGameCapturePicker } from "renderer/components/GameCapturePicker";
 import { currentSettings, openScreenSharePicker } from "renderer/components/ScreenSharePicker";
-import { captureGamePreview, createGameCaptureStream } from "renderer/patches/gameCapture";
+import { createGameCaptureStream } from "renderer/patches/gameCapture";
 import { State } from "renderer/settings";
 import { isLinux } from "renderer/utils";
 
@@ -39,15 +39,48 @@ if (isLinux) {
             if (pick.type === "desktop") VesktopNative.gameCapture.stop();
 
             if (pick.type === "game") {
+                // a small live capture drives the preview while the settings modal is
+                // open; the real one starts from scratch once the user commits
+                const preview = await createGameCaptureStream({
+                    exe: pick.exe,
+                    width: 960,
+                    height: 540,
+                    fps: 30,
+                    audio: false
+                }).catch(err => {
+                    logger.error("game preview failed", err);
+                    return null;
+                });
+
                 // reuse Vesktop's own settings step, so quality, content hint and
                 // the venmic audio sources all behave exactly as they do normally
-                const preview = await captureGamePreview(pick.exe);
-                const streamSettings = await openScreenSharePicker(
-                    [{ id: `vesktop-game:${pick.exe}`, name: pick.exe, url: preview ?? "" }],
-                    true,
-                    `Share ${pick.exe}`
-                ).catch(() => null);
-                if (!streamSettings) throw new DOMException("Permission denied", "NotAllowedError");
+                let streamSettings: Awaited<ReturnType<typeof openScreenSharePicker>> | null = null;
+                try {
+                    streamSettings = await openScreenSharePicker(
+                        [
+                            {
+                                id: `vesktop-game:${pick.exe}`,
+                                name: pick.exe,
+                                url: "",
+                                stream: preview ?? undefined
+                            }
+                        ],
+                        true,
+                        `Share ${pick.exe}`
+                    );
+                } catch {
+                    streamSettings = null;
+                } finally {
+                    // stop() on a generator track doesn't necessarily fire "ended",
+                    // so tell the capture host directly rather than relying on it
+                    preview?.getTracks().forEach(t => t.stop());
+                    if (preview) VesktopNative.gameCapture.stop();
+                }
+
+                if (!streamSettings) {
+                    VesktopNative.gameCapture.stop();
+                    throw new DOMException("Permission denied", "NotAllowedError");
+                }
 
                 const height = Number(State.store.screenshareQuality?.resolution ?? 720);
                 return createGameCaptureStream({
