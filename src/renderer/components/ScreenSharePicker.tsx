@@ -606,6 +606,9 @@ function AudioSourcePickerLinux({
     const [didAutoSelect, setDidAutoSelect] = useState(false);
     useEffect(() => {
         if (didAutoSelect || !audioHint || !sources.ok || includeSources !== "None") return;
+        // useAwaiter hands back an empty fallback on the first render; marking the
+        // attempt done there would mean never retrying once the real list lands
+        if (!sources.targets.length) return;
 
         const needle = audioHint.toLowerCase();
         // only the identifying fields: matching every property would let a short

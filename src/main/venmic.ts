@@ -76,13 +76,19 @@ function buildLinkData({ include, exclude }: { include?: Node[]; exclude?: Node[
     const { mute, ignoreDevices, ignoreInputMedia, ignoreVirtual, workaround, onlySpeakers, onlyDefaultSpeakers } =
         Settings.store.audio ?? {};
 
+    // "Only Speakers" is about narrowing down entire-desktop audio. Applying it to
+    // an explicitly picked app silently drops anything that plays somewhere other
+    // than a real speaker - a chatmix loopback, say - and the stream goes out mute
+    // with nothing indicating why.
+    const isSystemWide = !include?.length;
+
     const data: LinkData = {
         mute: mute ?? true,
         include: include ?? [],
         exclude: exclude ?? [],
-        only_speakers: onlySpeakers,
+        only_speakers: isSystemWide ? onlySpeakers : false,
         ignore_devices: ignoreDevices,
-        only_default_speakers: onlyDefaultSpeakers
+        only_default_speakers: isSystemWide ? onlyDefaultSpeakers : false
     };
 
     data.exclude.push({ "application.process.id": pid });
