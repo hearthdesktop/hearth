@@ -483,6 +483,17 @@ function isSpecialSource(value?: AudioSource | AudioSources): value is SpecialSo
     return typeof value === "string";
 }
 
+const AUDIO_NAME_PROPS = ["application.name", "node.description", "node.name", "application.process.binary"] as const;
+
+/**
+ * Selections are stored as a single identifying prop, and hasMatchingProps
+ * compares key counts - so a whole node object can never match an option.
+ */
+function toAudioValue(node: Node): Node | null {
+    const prop = AUDIO_NAME_PROPS.find(prop => node[prop]);
+    return prop ? { [prop]: node[prop]! } : null;
+}
+
 function mapToAudioItem(node: AudioSource, granularSelect?: boolean, deviceSelect?: boolean): AudioItem[] {
     if (isSpecialSource(node)) {
         return [{ name: node, value: node }];
@@ -498,8 +509,7 @@ function mapToAudioItem(node: AudioSource, granularSelect?: boolean, deviceSelec
         return [];
     }
 
-    const preferred = ["application.name", "node.description", "node.name", "application.process.binary"] as const;
-    const prop = preferred.find(prop => node[prop]);
+    const prop = AUDIO_NAME_PROPS.find(prop => node[prop]);
 
     if (!prop) {
         return [];
@@ -620,7 +630,9 @@ function AudioSourcePickerLinux({
         );
 
         setDidAutoSelect(true);
-        if (match) setIncludeSources([match]);
+
+        const value = match && toAudioValue(match);
+        if (value) setIncludeSources([value]);
     }, [sources, audioHint, includeSources, didAutoSelect]);
 
     const hasPipewirePulse = sources.ok ? sources.hasPipewirePulse : true;
