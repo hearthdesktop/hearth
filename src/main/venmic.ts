@@ -20,6 +20,7 @@ let initialized = false;
 
 let hasPipewirePulse = false;
 let isGlibCxxOutdated = false;
+let importError: string | null = null;
 
 function importVenmic() {
     if (imported) {
@@ -35,6 +36,9 @@ function importVenmic() {
         hasPipewirePulse = PatchBay.hasPipeWire();
     } catch (e: any) {
         console.error("Failed to import venmic", e);
+        // a missing shared library is just as fatal as an outdated one, and used
+        // to leave the audio section blank with nothing explaining why
+        importError = e?.message?.split("\n")[0] ?? String(e);
         isGlibCxxOutdated = (e?.stack || e?.message || "").toLowerCase().includes("glibc");
     }
 }
@@ -107,7 +111,7 @@ ipcMain.handle(IpcEvents.VIRT_MIC_LIST, () => {
         ?.list(granularSelect ? [] : ["application.name", "node.name"])
         .filter(s => s["application.process.id"] !== audioPid);
 
-    return targets ? { ok: true, targets, hasPipewirePulse } : { ok: false, isGlibCxxOutdated };
+    return targets ? { ok: true, targets, hasPipewirePulse } : { ok: false, isGlibCxxOutdated, error: importError };
 });
 
 ipcMain.handle(IpcEvents.VIRT_MIC_START, (_, include: Node[]) => {

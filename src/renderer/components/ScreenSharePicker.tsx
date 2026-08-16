@@ -28,6 +28,7 @@ import {
     Modal,
     openModal,
     Select,
+    useEffect,
     UserStore,
     useState
 } from "@vencord/types/webpack/common";
@@ -74,6 +75,8 @@ interface Source {
     url: string;
     /** live preview, used instead of the thumbnail when the source can provide one */
     stream?: MediaStream;
+    /** preselect the audio source belonging to this app, e.g. the game being shared */
+    audioHint?: string;
 }
 
 export let currentSettings: StreamSettings | null = null;
@@ -468,6 +471,7 @@ function StreamSettingsUi({
                         granularSelect={Settings.audio?.granularSelect}
                         setIncludeSources={sources => setSettings(s => ({ ...s, includeSources: sources }))}
                         setExcludeSources={sources => setSettings(s => ({ ...s, excludeSources: sources }))}
+                        audioHint={source.audioHint}
                     />
                 )}
             </Card>
@@ -578,7 +582,8 @@ function AudioSourcePickerLinux({
     granularSelect,
     openSettings,
     setIncludeSources,
-    setExcludeSources
+    setExcludeSources,
+    audioHint
 }: {
     includeSources?: AudioSources;
     excludeSources?: AudioSources;
@@ -587,12 +592,33 @@ function AudioSourcePickerLinux({
     openSettings: () => void;
     setIncludeSources: (s: AudioSources) => void;
     setExcludeSources: (s: AudioSources) => void;
+    /** preselect the source belonging to this app, e.g. the game being shared */
+    audioHint?: string;
 }) {
     const [audioSourcesSignal, refreshAudioSources] = useForceUpdater(true);
     const [sources, _, loading] = useAwaiter(() => VesktopNative.virtmic.list(), {
         fallbackValue: { ok: true, targets: [], hasPipewirePulse: true },
         deps: [audioSourcesSignal]
     });
+
+    // Sharing a game and then hunting for its audio in a dropdown is busywork,
+    // so pick the matching node once, leaving manual changes alone afterwards.
+    const [didAutoSelect, setDidAutoSelect] = useState(false);
+    useEffect(() => {
+        if (didAutoSelect || !audioHint || !sources.ok || includeSources !== "None") return;
+
+        const needle = audioHint.toLowerCase();
+        // only the identifying fields: matching every property would let a short
+        // name hit things like library.name and select an unrelated node
+        const match = sources.targets.find(t =>
+            (["application.name", "node.name", "node.description", "media.name"] as const).some(key =>
+                t[key]?.toLowerCase().includes(needle)
+            )
+        );
+
+        setDidAutoSelect(true);
+        if (match) setIncludeSources([match]);
+    }, [sources, audioHint, includeSources, didAutoSelect]);
 
     const hasPipewirePulse = sources.ok ? sources.hasPipewirePulse : true;
     const [ignorePulseWarning, setIgnorePulseWarning] = useState(false);
@@ -613,6 +639,19 @@ function AudioSourcePickerLinux({
                     this guide
                 </a>{" "}
                 for possible solutions.
+            </Paragraph>
+        );
+    }
+
+    if (!sources.ok) {
+        return (
+            <Paragraph>
+                Failed to load{" "}
+                <a href="https://github.com/Vencord/venmic" target="_blank" rel="noreferrer">
+                    venmic
+                </a>
+                , so no audio sources are available.
+                {sources.error ? <> The error was: {sources.error}</> : null}
             </Paragraph>
         );
     }

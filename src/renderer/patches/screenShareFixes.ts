@@ -62,7 +62,8 @@ if (isLinux) {
                                 id: `vesktop-game:${pick.exe}`,
                                 name: pick.exe,
                                 url: "",
-                                stream: preview ?? undefined
+                                stream: preview ?? undefined,
+                                audioHint: pick.exe
                             }
                         ],
                         true,
