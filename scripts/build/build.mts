@@ -73,14 +73,37 @@ async function copyLibVesktop() {
     }
 }
 
+async function copyVkCapture() {
+    if (process.platform !== "linux") return;
+
+    try {
+        await copyFile(
+            "./packages/vkcapture/build/Release/vkcapture.node",
+            `./static/dist/vkcapture-${process.arch}.node`
+        );
+        console.log("Using local vkcapture build");
+    } catch {
+        return Promise.all([
+            copyFile("./packages/vkcapture/prebuilds/vkcapture-x64.node", "./static/dist/vkcapture-x64.node"),
+            copyFile("./packages/vkcapture/prebuilds/vkcapture-arm64.node", "./static/dist/vkcapture-arm64.node")
+        ]).catch(() => console.warn("Failed to copy vkcapture. Building without game capture support"));
+    }
+}
+
 await Promise.all([
     copyVenmic(),
     copyLibVesktop(),
+    copyVkCapture(),
     createContext({
         ...NodeCommonOpts,
         entryPoints: ["src/main/index.ts"],
         outfile: "dist/js/main.js",
         footer: { js: "//# sourceURL=VesktopMain" }
+    }),
+    createContext({
+        ...NodeCommonOpts,
+        entryPoints: ["src/main/gameCapture/host.ts"],
+        outfile: "dist/js/gameCaptureHost.js"
     }),
     createContext({
         ...NodeCommonOpts,

@@ -26,6 +26,11 @@ let onDevtoolsClose = () => {};
 ipcRenderer.on(IpcEvents.DEVTOOLS_OPENED, () => onDevtoolsOpen());
 ipcRenderer.on(IpcEvents.DEVTOOLS_CLOSED, () => onDevtoolsClose());
 
+// contextBridge can't carry a MessagePort, so hand it to the main world directly
+ipcRenderer.on(IpcEvents.GAME_CAPTURE_PORT, e => {
+    window.postMessage({ type: "VESKTOP_GAME_CAPTURE_PORT" }, "*", [e.ports[0]]);
+});
+
 export const VesktopNative = {
     app: {
         relaunch: () => invoke<void>(IpcEvents.RELAUNCH),
@@ -83,6 +88,13 @@ export const VesktopNative = {
     },
     capturer: {
         getLargeThumbnail: (id: string) => invoke<string>(IpcEvents.CAPTURER_GET_LARGE_THUMBNAIL, id)
+    },
+    /** only available on Linux. Games launched with OBS_VKCAPTURE=1. */
+    gameCapture: {
+        list: () => invoke<{ exe: string }[]>(IpcEvents.GAME_CAPTURE_LIST),
+        start: (opts: { exe: string; width: number; height: number; fps: number }) =>
+            invoke<void>(IpcEvents.GAME_CAPTURE_START, opts),
+        stop: () => invoke<void>(IpcEvents.GAME_CAPTURE_STOP)
     },
     /** only available on Linux. */
     virtmic: {

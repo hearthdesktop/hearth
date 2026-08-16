@@ -90,6 +90,9 @@ importers:
       typescript-eslint:
         specifier: ^8.70.0
         version: 8.70.0(eslint@10.11.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
+      vkcapture:
+        specifier: link:packages/vkcapture
+        version: link:packages/vkcapture
       xml-formatter:
         specifier: ^3.6.7
         version: 3.7.0
@@ -99,6 +102,15 @@ importers:
         version: 7.2.3(supports-color@7.2.0)
 
   packages/libvesktop:
+    devDependencies:
+      node-addon-api:
+        specifier: ^8.5.0
+        version: 8.9.0
+      node-gyp:
+        specifier: ^11.4.2
+        version: 11.5.0(supports-color@7.2.0)
+
+  packages/vkcapture:
     devDependencies:
       node-addon-api:
         specifier: ^8.5.0

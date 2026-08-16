@@ -10,6 +10,15 @@ declare global {
     export var VesktopPatchGlobals: any;
 
     export var IS_DEV: boolean;
+
+    // Breakout Box, still main-thread only in Chromium and missing from lib.dom
+    interface MediaStreamTrackGenerator extends MediaStreamTrack {
+        readonly writable: WritableStream<VideoFrame>;
+    }
+    export var MediaStreamTrackGenerator: {
+        prototype: MediaStreamTrackGenerator;
+        new (init: { kind: "video" | "audio" }): MediaStreamTrackGenerator;
+    };
 }
 
 export {};

@@ -58,3 +58,32 @@ If you want to build it from source:
     - Fedora: `dnf install @c-development @development-tools python3 curl pkgconf-pkg-config glib2-devel`
 2. Run `pnpm buildLibVesktop`
 3. From now on, building Vesktop will use your own build
+
+## Game Capture (Linux)
+
+Sharing your screen normally goes through the desktop portal, which makes the compositor
+composite and copy every frame. On a fullscreen game that costs you direct scanout, and the
+framerate drop is often severe.
+
+Game capture instead reads frames from the game's own swapchain, so the compositor is never
+involved. It needs [obs-vkcapture](https://github.com/nowrep/obs-vkcapture) installed and the
+game started with the capture layer loaded:
+
+- Steam launch options: `OBS_VKCAPTURE=1 %command%`
+- Anything else: `obs-gamecapture <program>`
+
+Once a game is running that way, hitting Go Live offers it as a source alongside the usual
+screens and windows. The layer only loads at process start, so a game that was already running
+has to be restarted to show up.
+
+Only one program can consume the capture socket at a time — if OBS is open with a Game Capture
+source, Vesktop can't capture until you close it, and vice versa.
+
+### Building vkcapture from Source
+
+Prebuilt binaries for x64 and arm64 are used by default. To build it yourself:
+1. Install build dependencies:
+    - Debian/Ubuntu: `apt install build-essential python3 curl pkg-config libegl1-mesa-dev libgles2-mesa-dev`
+    - Fedora: `dnf install @c-development @development-tools python3 curl pkgconf-pkg-config mesa-libEGL-devel mesa-libGLES-devel`
+2. Run `pnpm buildVkCapture`
+3. From now on, building Vesktop will use your own build

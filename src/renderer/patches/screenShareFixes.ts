@@ -5,7 +5,9 @@
  */
 
 import { Logger } from "@vencord/types/utils";
+import { openGameCapturePicker } from "renderer/components/GameCapturePicker";
 import { currentSettings } from "renderer/components/ScreenSharePicker";
+import { createGameCaptureStream } from "renderer/patches/gameCapture";
 import { State } from "renderer/settings";
 import { isLinux } from "renderer/utils";
 
@@ -25,6 +27,28 @@ if (isLinux) {
     }
 
     navigator.mediaDevices.getDisplayMedia = async function (opts) {
+        // Offer game capture first, but only when a game is actually running with
+        // the capture layer loaded - otherwise nothing about this flow changes.
+        const games = await VesktopNative.gameCapture.list().catch(() => []);
+        if (games.length) {
+            const pick = await openGameCapturePicker(games).catch(() => null);
+            if (!pick) {
+                VesktopNative.gameCapture.stop();
+                throw new DOMException("Permission denied", "NotAllowedError");
+            }
+            if (pick.type === "desktop") VesktopNative.gameCapture.stop();
+
+            if (pick.type === "game") {
+                const height = Number(State.store.screenshareQuality?.resolution ?? 720);
+                return createGameCaptureStream({
+                    exe: pick.exe,
+                    width: Math.round(height * (16 / 9)),
+                    height,
+                    fps: Number(State.store.screenshareQuality?.frameRate ?? 30)
+                });
+            }
+        }
+
         const stream = await original.call(this, opts);
         const id = await getVirtmic();
 

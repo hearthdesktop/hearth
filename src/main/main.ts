@@ -14,6 +14,7 @@ import { app, BrowserWindow, nativeTheme } from "electron";
 
 import { DATA_DIR } from "./constants";
 import { createFirstLaunchTour } from "./firstLaunch";
+import { registerGameCaptureHandlers } from "./gameCapture";
 import { createWindows, mainWin } from "./mainWindow";
 import { registerMediaPermissionsHandler } from "./mediaPermissions";
 import { registerScreenShareHandler } from "./screenShare";
@@ -104,6 +105,7 @@ function init() {
         if (process.platform === "win32") app.setAppUserModelId("dev.vencord.vesktop");
 
         registerScreenShareHandler();
+        registerGameCaptureHandlers();
         registerMediaPermissionsHandler();
 
         bootstrap();
