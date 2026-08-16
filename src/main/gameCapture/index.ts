@@ -41,17 +41,18 @@ function request<T>(message: any, expect: string, timeoutMs = 3000): Promise<T> 
     return ensureChild().then(
         () =>
             new Promise<T>(resolve => {
-                const timer = setTimeout(() => {
-                    child?.off("message", onMessage);
-                    resolve({} as T);
-                }, timeoutMs);
-
                 const onMessage = (msg: any) => {
                     if (msg?.type !== expect) return;
                     clearTimeout(timer);
                     child?.off("message", onMessage);
                     resolve(msg as T);
                 };
+
+                const timer = setTimeout(() => {
+                    console.error(`[gameCapture] capture host did not answer "${message.type}" in ${timeoutMs}ms`);
+                    child?.off("message", onMessage);
+                    resolve({} as T);
+                }, timeoutMs);
 
                 child!.on("message", onMessage);
                 child!.postMessage(message);
@@ -62,6 +63,11 @@ function request<T>(message: any, expect: string, timeoutMs = 3000): Promise<T> 
 export async function listGameCaptureClients(): Promise<GameCaptureClient[]> {
     const res = await request<{ clients?: GameCaptureClient[]; error?: string }>({ type: "list" }, "clients");
     if (res.error) console.error("[gameCapture]", res.error);
+    if (IS_DEV)
+        console.log(
+            `[gameCapture] ${res.clients?.length ?? 0} client(s):`,
+            res.clients?.map(c => c.exe).join(", ") || "-"
+        );
     return res.clients ?? [];
 }
 
@@ -92,6 +98,10 @@ export function stopGameCapture() {
 
 export function registerGameCaptureHandlers() {
     if (process.platform !== "linux") return;
+
+    // Bind the socket early so games are already connected by the time someone
+    // hits share - otherwise the first list races their once-a-second retry.
+    listGameCaptureClients().catch(() => {});
 
     handle(IpcEvents.GAME_CAPTURE_LIST, () => listGameCaptureClients());
     handle(IpcEvents.GAME_CAPTURE_START, (_e, opts) => startGameCapture(opts));

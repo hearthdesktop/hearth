@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./gameCapturePicker.css";
+
 import { classNameFactory } from "@vencord/types/api/Styles";
 import { BaseText, Button, Card, Paragraph } from "@vencord/types/components";
 import { ModalCloseButton, Modals, ModalSize, openModal } from "@vencord/types/utils";
@@ -33,24 +35,24 @@ function ModalComponent({
                 <BaseText size="lg" weight="semibold" tag="h3" style={{ flexGrow: 1 }}>
                     Share a Game
                 </BaseText>
-                <ModalCloseButton onClick={close} />
+                <ModalCloseButton className={cl("header-close-button")} onClick={close} />
             </Modals.ModalHeader>
 
             <Modals.ModalContent className={cl("modal")}>
-                <Paragraph>
-                    These games are running with game capture enabled. Sharing one of them reads frames straight from
-                    the game instead of the desktop, which is much easier on your framerate.
+                <Paragraph className={cl("hint")}>
+                    These games are running with game capture enabled. Sharing one reads frames straight from the game
+                    instead of the desktop, which is much easier on your framerate.
                 </Paragraph>
 
-                <div className={cl("list")} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div className={cl("list")}>
                     {games.map(game => (
                         <Card
                             key={game.exe}
                             className={cl("game")}
-                            style={{ padding: "12px", cursor: "pointer" }}
                             onClick={() => submit({ type: "game", exe: game.exe })}
                         >
-                            <BaseText weight="semibold">{game.exe}</BaseText>
+                            <span className={cl("name")}>{game.exe}</span>
+                            <span className={cl("badge")}>Game Capture</span>
                         </Card>
                     ))}
                 </div>

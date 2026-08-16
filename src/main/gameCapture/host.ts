@@ -33,20 +33,42 @@ function load() {
     }
 }
 
-process.parentPort.on("message", e => {
+let socketOpen = false;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * The layer only retries its connection about once a second, so a freshly bound
+ * socket looks empty for up to that long. Wait it out on the first open only.
+ */
+async function collectClients(): Promise<CaptureClient[]> {
+    if (!vkcapture) return [];
+
+    const wasOpen = socketOpen;
+    vkcapture.open();
+    socketOpen = true;
+
+    let clients = vkcapture.clients();
+    if (clients.length || wasOpen) return clients;
+
+    for (let waited = 0; waited < 1500 && !clients.length; waited += 100) {
+        await sleep(100);
+        clients = vkcapture.clients();
+    }
+    return clients;
+}
+
+process.parentPort.on("message", async e => {
     const msg = e.data;
 
     if (msg?.type === "list") {
         load();
         let clients: CaptureClient[] = [];
         let error = loadError;
-        if (vkcapture) {
-            try {
-                vkcapture.open();
-                clients = vkcapture.clients();
-            } catch (err) {
-                error = String(err);
-            }
+        try {
+            clients = await collectClients();
+        } catch (err) {
+            error = String(err);
         }
         process.parentPort.postMessage({ type: "clients", clients, error });
         return;
@@ -75,14 +97,16 @@ process.parentPort.on("message", e => {
     }
 
     if (msg?.type === "stop") {
-        // also drops the socket, so OBS can take it back while we're idle
+        // keep the socket bound: dropping it makes every game reconnect, and
+        // they only retry once a second, so the next list would come up empty
         vkcapture?.stop();
-        vkcapture?.close();
         return;
     }
 
-    if (msg?.type === "close") {
+    if (msg?.type === "release") {
+        // full teardown, so OBS can take the socket back
+        vkcapture?.stop();
         vkcapture?.close();
-        vkcapture = null;
+        socketOpen = false;
     }
 });
