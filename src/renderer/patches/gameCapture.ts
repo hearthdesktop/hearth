@@ -5,6 +5,7 @@
  */
 
 import { Logger } from "@vencord/types/utils";
+import { MediaEngineStore } from "@vencord/types/webpack/common";
 import { waitForVirtmicDevice } from "renderer/utils";
 
 const logger = new Logger("VesktopGameCapture");
@@ -41,6 +42,79 @@ function awaitPort(timeoutMs = 5000): Promise<MessagePort> {
             resolve(port);
         });
     });
+}
+
+const ADAPT_INTERVAL_MS = 2000;
+const MIN_HEIGHT = 180;
+
+function fitToPixels(pixels: number, max: { width: number; height: number }) {
+    const aspect = max.width / max.height;
+    let height = Math.round(Math.sqrt(Math.max(pixels, 1) / aspect));
+    height = Math.min(Math.max(height, MIN_HEIGHT), max.height);
+    height -= height % 4;
+    let width = Math.min(Math.round(height * aspect), max.width);
+    width -= width % 8;
+    return { width, height };
+}
+
+async function limitationReason(conn: any): Promise<string> {
+    let reason = "none";
+    try {
+        const stats = await conn.pc?.getStats?.();
+        stats?.forEach((r: any) => {
+            if (r.type === "outbound-rtp" && r.kind === "video") reason = r.qualityLimitationReason ?? "none";
+        });
+    } catch {}
+    return reason;
+}
+
+/**
+ * WebRTC normally tells a source to produce smaller frames when the viewer is
+ * windowed or the encoder is struggling. A MediaStreamTrackGenerator has no
+ * source to push back on, so those wants land nowhere and Discord ends up
+ * encoding full resolution for a thumbnail. Forward them to the capture instead.
+ */
+function startAdaptation(track: MediaStreamTrack, max: { width: number; height: number; fps: number }) {
+    let applied = { ...max };
+    let cpuStrikes = 0;
+    let healthyTicks = 0;
+
+    const timer = setInterval(async () => {
+        if (track.readyState !== "live") {
+            clearInterval(timer);
+            return;
+        }
+
+        // the vencord types don't describe the sink wants discord keeps here
+        const conn = [...MediaEngineStore.getMediaEngine().connections].find((c: any) => c.context === "stream") as any;
+        if (!conn) return;
+
+        const counts = Object.values(conn.remoteVideoSinkWants?.pixelCounts ?? {}) as number[];
+        const wanted = counts.length ? Math.max(...counts) : 0;
+        const reason = await limitationReason(conn);
+
+        // nobody is watching yet, so stay small rather than encoding for no one
+        const idlePixels = MIN_HEIGHT * MIN_HEIGHT * (max.width / max.height);
+        const target = fitToPixels(wanted > 0 ? wanted : idlePixels, max);
+
+        cpuStrikes = reason === "cpu" ? cpuStrikes + 1 : 0;
+        healthyTicks = reason === "none" ? healthyTicks + 1 : 0;
+
+        let { fps } = applied;
+        if (cpuStrikes >= 2 && fps > 30) fps = 30;
+        else if (healthyTicks >= 3 && fps < max.fps) fps = max.fps;
+
+        const heightChange = Math.abs(target.height - applied.height) / applied.height;
+        if (heightChange < 0.2 && fps === applied.fps) return;
+
+        applied = { ...target, fps };
+        logger.info(
+            `adapting capture to ${applied.width}x${applied.height}@${applied.fps} (viewer wants ${wanted}px, limited by ${reason})`
+        );
+        VesktopNative.gameCapture.reconfigure(applied);
+    }, ADAPT_INTERVAL_MS);
+
+    track.addEventListener("ended", () => clearInterval(timer));
 }
 
 export interface GameCaptureOptions {
@@ -111,6 +185,7 @@ export async function createGameCaptureStream(opts: GameCaptureOptions): Promise
     });
 
     const stream = new MediaStream([generator]);
+    startAdaptation(generator, { width: opts.width, height: opts.height, fps: opts.fps });
 
     // mirror the audio behaviour of the normal screenshare path
     if (opts.audio === false) return stream;

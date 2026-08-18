@@ -94,6 +94,8 @@ export const VesktopNative = {
         list: () => invoke<{ exe: string }[]>(IpcEvents.GAME_CAPTURE_LIST),
         start: (opts: { exe: string; width: number; height: number; fps: number }) =>
             invoke<void>(IpcEvents.GAME_CAPTURE_START, opts),
+        reconfigure: (opts: { width: number; height: number; fps: number }) =>
+            invoke<void>(IpcEvents.GAME_CAPTURE_RECONFIGURE, opts),
         stop: () => invoke<void>(IpcEvents.GAME_CAPTURE_STOP)
     },
     /** only available on Linux. */

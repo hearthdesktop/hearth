@@ -25,5 +25,7 @@ export function open(): void;
 export function clients(): CaptureClient[];
 /** Begin delivering I420 frames. Calls open() implicitly. */
 export function start(options: CaptureOptions, onFrame: (data: Buffer, meta: FrameMeta) => void): void;
+/** Change output size or framerate without restarting the session. */
+export function reconfigure(options: CaptureOptions): void;
 export function stop(): void;
 export function close(): void;

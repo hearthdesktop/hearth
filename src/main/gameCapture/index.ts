@@ -103,6 +103,10 @@ export async function startGameCapture(opts: { exe: string; width: number; heigh
     if (!res.ok) throw new Error(res.error ?? "failed to start game capture");
 }
 
+export function reconfigureGameCapture(opts: { width: number; height: number; fps: number }) {
+    child?.postMessage({ type: "reconfigure", ...opts });
+}
+
 export function stopGameCapture() {
     child?.postMessage({ type: "stop" });
 }
@@ -122,5 +126,6 @@ export function registerGameCaptureHandlers() {
 
     handle(IpcEvents.GAME_CAPTURE_LIST, () => listGameCaptureClients());
     handle(IpcEvents.GAME_CAPTURE_START, (_e, opts) => startGameCapture(opts));
+    handle(IpcEvents.GAME_CAPTURE_RECONFIGURE, (_e, opts) => reconfigureGameCapture(opts));
     handle(IpcEvents.GAME_CAPTURE_STOP, () => stopGameCapture());
 }
