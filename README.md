@@ -76,8 +76,10 @@ Once a game is running that way, hitting Go Live offers it as a source alongside
 screens and windows. The layer only loads at process start, so a game that was already running
 has to be restarted to show up.
 
-Only one program can consume the capture socket at a time — if OBS is open with a Game Capture
-source, Vesktop can't capture until you close it, and vice versa.
+Only one program can consume the capture socket at a time. Vesktop only holds it while you're
+picking a source or actively sharing, and lets go shortly afterwards, so OBS can capture normally
+the rest of the time. While a Vesktop game share is running, OBS' own Game Capture won't find
+anything, and vice versa. Turning off Settings -> Game Capture releases it outright.
 
 ### Building vkcapture from Source
 

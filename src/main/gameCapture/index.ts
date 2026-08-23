@@ -65,12 +65,35 @@ function enabled() {
     return Settings.store.gameCapture ?? true;
 }
 
+// Only one program can hold the capture socket, so sitting on it while idle
+// would stop OBS from capturing anything for as long as Vesktop is open. Hold
+// it only around actual use, with a grace period so the picker -> preview ->
+// capture sequence doesn't make every game reconnect in the middle of it.
+const RELEASE_AFTER_IDLE_MS = 20_000;
+let releaseTimer: ReturnType<typeof setTimeout> | null = null;
+
+function cancelRelease() {
+    if (!releaseTimer) return;
+    clearTimeout(releaseTimer);
+    releaseTimer = null;
+}
+
+function scheduleRelease() {
+    cancelRelease();
+    releaseTimer = setTimeout(() => {
+        releaseTimer = null;
+        releaseGameCapture();
+    }, RELEASE_AFTER_IDLE_MS);
+}
+
 export function releaseGameCapture() {
     child?.postMessage({ type: "release" });
 }
 
 export async function listGameCaptureClients(): Promise<GameCaptureClient[]> {
     if (!enabled()) return [];
+
+    cancelRelease();
 
     const res = await request<{ clients?: GameCaptureClient[]; error?: string }>({ type: "list" }, "clients");
     if (res.error) console.error("[gameCapture]", res.error);
@@ -79,10 +102,13 @@ export async function listGameCaptureClients(): Promise<GameCaptureClient[]> {
             `[gameCapture] ${res.clients?.length ?? 0} client(s):`,
             res.clients?.map(c => c.exe).join(", ") || "-"
         );
+    // opening the picker and walking away shouldn't keep the socket forever
+    scheduleRelease();
     return res.clients ?? [];
 }
 
 export async function startGameCapture(opts: { exe: string; width: number; height: number; fps: number }) {
+    cancelRelease();
     await ensureChild();
 
     // one port to the capture host, its twin handed to the renderer
@@ -109,19 +135,14 @@ export function reconfigureGameCapture(opts: { width: number; height: number; fp
 
 export function stopGameCapture() {
     child?.postMessage({ type: "stop" });
+    scheduleRelease();
 }
 
 export function registerGameCaptureHandlers() {
     if (process.platform !== "linux") return;
 
-    // Bind the socket early so games are already connected by the time someone
-    // hits share - otherwise the first list races their once-a-second retry.
-    listGameCaptureClients().catch(() => {});
-
-    // only one program can hold the capture socket, so give it back when asked to
     Settings.addChangeListener("gameCapture", value => {
         if (value === false) releaseGameCapture();
-        else listGameCaptureClients().catch(() => {});
     });
 
     handle(IpcEvents.GAME_CAPTURE_LIST, () => listGameCaptureClients());
