@@ -21,6 +21,7 @@
 - **Windows, macOS, AppImage, deb, rpm**: download the latest build from the
   [releases page](https://github.com/hearthdesktop/hearth/releases)
 - **Arch Linux** (AUR): `yay -S hearth-bin`
+- **Fedora** (COPR): `sudo dnf copr enable umceko/hearth && sudo dnf install hearth`
 - **Nix**: `nix run github:hearthdesktop/hearth`, or add the flake to your configuration and install
   `inputs.hearth.packages.${pkgs.system}.default`
 
