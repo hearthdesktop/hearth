@@ -19,9 +19,8 @@ Recommends:     pipewire
 Suggests:       obs-vkcapture
 
 %description
-Hearth is a custom Discord desktop app with Vencord preinstalled, forked from
-Vesktop. On Linux it can share a fullscreen game through game capture without
-losing direct scanout.
+Hearth is a custom Discord desktop app with Vencord preinstalled, a
+community-driven fork of Vesktop.
 
 %prep
 %setup -q -c -T
