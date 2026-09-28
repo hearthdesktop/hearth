@@ -159,14 +159,6 @@ class Capturer
                       Napi::Function cb, std::string &err);
     void stopCapture();
 
-    // the I420 pack needs whole texels per row and whole chroma rows
-    void applyGeometry(int width, int height, int fps)
-    {
-        outW_.store(std::max(64, width - (width % 8)));
-        outH_.store(std::max(64, height - (height % 4)));
-        fps_.store(fps > 0 ? fps : 60);
-    }
-
   private:
     void threadMain();
     bool eglInit(std::string &err);
@@ -195,7 +187,7 @@ class Capturer
     bool pendingIsNew_ = false;
 
     int sockfd_ = -1;
-    std::atomic<int> outW_{1280}, outH_{720}, fps_{60};
+    int outW_ = 1280, outH_ = 720, fps_ = 60;
 
     Napi::ThreadSafeFunction tsfn_;
     bool tsfnActive_ = false;
@@ -710,8 +702,7 @@ void Capturer::threadMain()
 
     while (running_.load()) {
         const bool capturing = capturing_.load();
-        const int fps = fps_.load();
-        const auto interval = std::chrono::microseconds(1000000 / (fps > 0 ? fps : 60));
+        const auto interval = std::chrono::microseconds(1000000 / (fps_ > 0 ? fps_ : 60));
 
         int timeoutMs = 100;
         if (capturing) {
@@ -826,7 +817,9 @@ bool Capturer::startCapture(const std::string &exe, int width, int height, int f
         return false;
 
     // the I420 pack needs whole texels per row and whole chroma rows
-    applyGeometry(width, height, fps);
+    outW_ = std::max(64, width - (width % 8));
+    outH_ = std::max(64, height - (height % 4));
+    fps_ = fps > 0 ? fps : 60;
 
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -893,23 +886,6 @@ Napi::Value Start(const Napi::CallbackInfo &info)
     return env.Undefined();
 }
 
-// Resize mid-session: WebRTC can't push its sink wants onto a generator track,
-// so the renderer forwards them here instead.
-Napi::Value Reconfigure(const Napi::CallbackInfo &info)
-{
-    Napi::Env env = info.Env();
-    if (info.Length() < 1 || !info[0].IsObject())
-        throw Napi::TypeError::New(env, "reconfigure(options)");
-
-    Napi::Object opts = info[0].As<Napi::Object>();
-    const int width = opts.Has("width") ? opts.Get("width").ToNumber().Int32Value() : 1280;
-    const int height = opts.Has("height") ? opts.Get("height").ToNumber().Int32Value() : 720;
-    const int fps = opts.Has("fps") ? opts.Get("fps").ToNumber().Int32Value() : 60;
-
-    g_capturer.applyGeometry(width, height, fps);
-    return env.Undefined();
-}
-
 Napi::Value Stop(const Napi::CallbackInfo &info)
 {
     g_capturer.stopCapture();
@@ -927,7 +903,6 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
     exports.Set("open", Napi::Function::New(env, Open));
     exports.Set("clients", Napi::Function::New(env, Clients));
     exports.Set("start", Napi::Function::New(env, Start));
-    exports.Set("reconfigure", Napi::Function::New(env, Reconfigure));
     exports.Set("stop", Napi::Function::New(env, Stop));
     exports.Set("close", Napi::Function::New(env, Close));
     return exports;

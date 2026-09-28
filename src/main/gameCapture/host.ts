@@ -16,7 +16,6 @@ type VkCapture = {
     open(): void;
     clients(): CaptureClient[];
     start(options: CaptureOptions, onFrame: (data: Buffer, meta: FrameMeta) => void): void;
-    reconfigure(options: CaptureOptions): void;
     stop(): void;
     close(): void;
 };
@@ -93,15 +92,6 @@ process.parentPort.on("message", async e => {
             process.parentPort.postMessage({ type: "started", ok: true });
         } catch (err) {
             process.parentPort.postMessage({ type: "started", ok: false, error: String(err) });
-        }
-        return;
-    }
-
-    if (msg?.type === "reconfigure") {
-        try {
-            vkcapture?.reconfigure({ width: msg.width, height: msg.height, fps: msg.fps });
-        } catch (err) {
-            console.error("[gameCapture] reconfigure failed:", err);
         }
         return;
     }
