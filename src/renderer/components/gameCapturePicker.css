@@ -1,11 +1,3 @@
-.vcd-game-picker-modal {
-    padding: 1em;
-}
-
-.vcd-game-picker-header-close-button {
-    margin-left: auto;
-}
-
 .vcd-game-picker-hint {
     margin-bottom: 1em;
 }
@@ -33,9 +25,4 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-}
-
-.vcd-game-picker-footer {
-    display: flex;
-    gap: 1em;
 }
