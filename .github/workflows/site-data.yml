@@ -1,0 +1,41 @@
+name: Site data
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+concurrency:
+    group: site-data
+    cancel-in-progress: true
+
+permissions:
+    contents: write
+
+jobs:
+    changes:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            - name: Fetch upstream Vesktop
+              run: git fetch --no-tags https://github.com/Vencord/Vesktop.git main:refs/remotes/upstream/main
+
+            - name: List what Hearth adds on top of Vesktop
+              run: node scripts/utils/generateChanges.mjs upstream/main "$RUNNER_TEMP/changes.json"
+
+            - name: Publish to the site-data branch
+              run: |
+                  mkdir "$RUNNER_TEMP/site-data"
+                  cd "$RUNNER_TEMP/site-data"
+                  git init -q -b site-data
+                  cp "$RUNNER_TEMP/changes.json" .
+                  git add changes.json
+                  git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+                      commit -q -m "Update changes.json from ${GITHUB_SHA::7}"
+                  git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" site-data
+              env:
+                  GH_TOKEN: ${{ github.token }}
