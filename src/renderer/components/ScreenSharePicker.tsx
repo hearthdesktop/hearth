@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -35,7 +35,7 @@ import {
 import { Node } from "@vencord/venmic";
 import type { Dispatch, SetStateAction } from "react";
 import { addPatch } from "renderer/patches/shared";
-import { State, useSettings, useVesktopState } from "renderer/settings";
+import { State, useHearthState, useSettings } from "renderer/settings";
 import { isLinux, isWindows } from "renderer/utils";
 
 import { SimpleErrorBoundary } from "./SimpleErrorBoundary";
@@ -81,7 +81,7 @@ interface Source {
 
 export let currentSettings: StreamSettings | null = null;
 
-const logger = new Logger("VesktopScreenShare");
+const logger = new Logger("HearthScreenShare");
 
 addPatch({
     patches: [
@@ -135,7 +135,7 @@ if (isLinux) {
                 return;
             }
 
-            VesktopNative.virtmic.stop();
+            HearthNative.virtmic.stop();
         });
 
         FluxDispatcher.subscribe("STREAM_UPDATE", ({ streamKey }: { streamKey: string }) => {
@@ -143,7 +143,7 @@ if (isLinux) {
                 return;
             }
 
-            VesktopNative.virtmic.unmute();
+            HearthNative.virtmic.unmute();
         });
     });
 }
@@ -161,11 +161,11 @@ export function openScreenSharePicker(screens: Source[], skipPicker: boolean, ti
 
                         if (v.includeSources && v.includeSources !== "None") {
                             if (v.includeSources === "Entire System") {
-                                await VesktopNative.virtmic.startSystem(
+                                await HearthNative.virtmic.startSystem(
                                     !v.excludeSources || isSpecialSource(v.excludeSources) ? [] : v.excludeSources
                                 );
                             } else {
-                                await VesktopNative.virtmic.start(v.includeSources);
+                                await HearthNative.virtmic.start(v.includeSources);
                             }
                         }
 
@@ -370,7 +370,7 @@ function StreamSettingsUi({
     const qualitySettings = State.store.screenshareQuality!;
 
     const [thumb] = useAwaiter(
-        () => (skipPicker ? Promise.resolve(source.url) : VesktopNative.capturer.getLargeThumbnail(source.id)),
+        () => (skipPicker ? Promise.resolve(source.url) : HearthNative.capturer.getLargeThumbnail(source.id)),
         {
             fallbackValue: source.url,
             deps: [source.id]
@@ -606,7 +606,7 @@ function AudioSourcePickerLinux({
     audioHint?: string;
 }) {
     const [audioSourcesSignal, refreshAudioSources] = useForceUpdater(true);
-    const [sources, _, loading] = useAwaiter(() => VesktopNative.virtmic.list(), {
+    const [sources, _, loading] = useAwaiter(() => HearthNative.virtmic.list(), {
         fallbackValue: { ok: true, targets: [], hasPipewirePulse: true },
         deps: [audioSourcesSignal]
     });
@@ -781,7 +781,7 @@ function ModalComponent({
         audio: true,
         includeSources: "None"
     });
-    const qualitySettings = (useVesktopState().screenshareQuality ??= {
+    const qualitySettings = (useHearthState().screenshareQuality ??= {
         resolution: "720",
         frameRate: "30"
     });

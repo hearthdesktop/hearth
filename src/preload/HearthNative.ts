@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -28,10 +28,10 @@ ipcRenderer.on(IpcEvents.DEVTOOLS_CLOSED, () => onDevtoolsClose());
 
 // contextBridge can't carry a MessagePort, so hand it to the main world directly
 ipcRenderer.on(IpcEvents.GAME_CAPTURE_PORT, e => {
-    window.postMessage({ type: "VESKTOP_GAME_CAPTURE_PORT" }, "*", [e.ports[0]]);
+    window.postMessage({ type: "HEARTH_GAME_CAPTURE_PORT" }, "*", [e.ports[0]]);
 });
 
-export const VesktopNative = {
+export const HearthNative = {
     app: {
         relaunch: () => invoke<void>(IpcEvents.RELAUNCH),
         getVersion: () => sendSync<void>(IpcEvents.GET_VERSION),
@@ -41,11 +41,11 @@ export const VesktopNative = {
         isOutdated: () => invoke<boolean>(IpcEvents.UPDATER_IS_OUTDATED),
         openUpdater: () => invoke<void>(IpcEvents.UPDATER_OPEN),
         // used by vencord
-        getRendererCss: () => invoke<string>(IpcEvents.GET_VESKTOP_RENDERER_CSS),
+        getRendererCss: () => invoke<string>(IpcEvents.GET_HEARTH_RENDERER_CSS),
         onRendererCssUpdate: (cb: (newCss: string) => void) => {
             if (!IS_DEV) return;
 
-            ipcRenderer.on(IpcEvents.VESKTOP_RENDERER_CSS_UPDATE, (_e, newCss: string) => cb(newCss));
+            ipcRenderer.on(IpcEvents.HEARTH_RENDERER_CSS_UPDATE, (_e, newCss: string) => cb(newCss));
         }
     },
     autostart: {

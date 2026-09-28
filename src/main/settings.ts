@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -7,7 +7,7 @@
 import { type Settings as TVencordSettings } from "@vencord/types/Vencord";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
-import { DefaultVesktopSettings } from "shared/defaultSettings";
+import { DefaultHearthSettings } from "shared/defaultSettings";
 import type { Settings as TSettings, State as TState } from "shared/settings";
 import { SettingsStore } from "shared/utils/SettingsStore";
 
@@ -45,6 +45,6 @@ function loadSettings<T extends object = any>(file: string, name: string, defaul
     return store;
 }
 
-export const Settings = loadSettings<TSettings>(SETTINGS_FILE, "Hearth settings", DefaultVesktopSettings);
+export const Settings = loadSettings<TSettings>(SETTINGS_FILE, "Hearth settings", DefaultHearthSettings);
 export const VencordSettings = loadSettings<TVencordSettings>(VENCORD_SETTINGS_FILE, "Vencord settings");
 export const State = loadSettings<TState>(STATE_FILE, "Hearth state");

@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2026 Vendicated and Vesktop contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -7,7 +7,7 @@
 import { Logger } from "@vencord/types/utils";
 import { waitForVirtmicDevice } from "renderer/utils";
 
-const logger = new Logger("VesktopGameCapture");
+const logger = new Logger("HearthGameCapture");
 
 interface FrameMessage {
     data: Uint8Array;
@@ -19,7 +19,7 @@ let pendingPort: MessagePort | null = null;
 const portResolvers: ((port: MessagePort) => void)[] = [];
 
 window.addEventListener("message", e => {
-    if (e.source !== window || e.data?.type !== "VESKTOP_GAME_CAPTURE_PORT") return;
+    if (e.source !== window || e.data?.type !== "HEARTH_GAME_CAPTURE_PORT") return;
     const port = e.ports[0];
     const waiting = portResolvers.splice(0);
     if (waiting.length) waiting.forEach(r => r(port));
@@ -61,7 +61,7 @@ export async function createGameCaptureStream(opts: GameCaptureOptions): Promise
         throw new Error("this build of Electron has no MediaStreamTrackGenerator");
 
     const portArrival = awaitPort();
-    await VesktopNative.gameCapture.start({
+    await HearthNative.gameCapture.start({
         exe: opts.exe,
         width: opts.width,
         height: opts.height,
@@ -107,7 +107,7 @@ export async function createGameCaptureStream(opts: GameCaptureOptions): Promise
     generator.addEventListener("ended", () => {
         logger.info(`capture ended after ${written} frames (${dropped} dropped for backpressure)`);
         port.close();
-        VesktopNative.gameCapture.stop();
+        HearthNative.gameCapture.stop();
     });
 
     const stream = new MediaStream([generator]);

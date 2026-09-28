@@ -69,9 +69,9 @@ importers:
       eslint-plugin-unused-imports:
         specifier: ^4.4.1
         version: 4.4.1(@typescript-eslint/eslint-plugin@8.67.0(@typescript-eslint/parser@8.70.0(eslint@10.11.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3))(eslint@10.11.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3))(eslint@10.11.0(jiti@2.7.0)(supports-color@7.2.0))
-      libvesktop:
-        specifier: link:packages/libvesktop
-        version: link:packages/libvesktop
+      libhearth:
+        specifier: link:packages/libhearth
+        version: link:packages/libhearth
       prettier:
         specifier: ^3.9.8
         version: 3.9.8
@@ -101,7 +101,7 @@ importers:
         specifier: ^7.2.3
         version: 7.2.3(supports-color@7.2.0)
 
-  packages/libvesktop:
+  packages/libhearth:
     devDependencies:
       node-addon-api:
         specifier: ^8.5.0

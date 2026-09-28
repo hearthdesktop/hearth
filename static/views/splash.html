@@ -53,7 +53,7 @@
 
 <body>
     <div class="wrapper">
-        <img draggable="false" src="vesktop://assets/splash" alt="" role="presentation" />
+        <img draggable="false" src="hearth://assets/splash" alt="" role="presentation" />
         <p>Loading Hearth...</p>
         <p class="message"></p>
     </div>
@@ -62,7 +62,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const messageElement = document.querySelector('.message');
-        VesktopSplashNative.onUpdateMessage(message => {
+        HearthSplashNative.onUpdateMessage(message => {
             messageElement.textContent = message;
         })
     });

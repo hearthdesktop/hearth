@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -53,23 +53,23 @@ async function copyVenmic() {
     ]).catch(() => console.warn("Failed to copy venmic. Building without venmic support"));
 }
 
-async function copyLibVesktop() {
+async function copyLibHearth() {
     if (process.platform !== "linux") return;
 
     try {
         await copyFile(
-            "./packages/libvesktop/build/Release/vesktop.node",
-            `./static/dist/libvesktop-${process.arch}.node`
+            "./packages/libhearth/build/Release/hearth.node",
+            `./static/dist/libhearth-${process.arch}.node`
         );
-        console.log("Using local libvesktop build");
+        console.log("Using local libhearth build");
     } catch {
         console.log(
-            "Using prebuilt libvesktop binaries. Run `pnpm buildLibVesktop` and build again to build from source - see README.md for more details"
+            "Using prebuilt libhearth binaries. Run `pnpm buildLibHearth` and build again to build from source - see README.md for more details"
         );
         return Promise.all([
-            copyFile("./packages/libvesktop/prebuilds/vesktop-x64.node", "./static/dist/libvesktop-x64.node"),
-            copyFile("./packages/libvesktop/prebuilds/vesktop-arm64.node", "./static/dist/libvesktop-arm64.node")
-        ]).catch(() => console.warn("Failed to copy libvesktop. Building without libvesktop support"));
+            copyFile("./packages/libhearth/prebuilds/libhearth-x64.node", "./static/dist/libhearth-x64.node"),
+            copyFile("./packages/libhearth/prebuilds/libhearth-arm64.node", "./static/dist/libhearth-arm64.node")
+        ]).catch(() => console.warn("Failed to copy libhearth. Building without libhearth support"));
     }
 }
 
@@ -92,13 +92,13 @@ async function copyVkCapture() {
 
 await Promise.all([
     copyVenmic(),
-    copyLibVesktop(),
+    copyLibHearth(),
     copyVkCapture(),
     createContext({
         ...NodeCommonOpts,
         entryPoints: ["src/main/index.ts"],
         outfile: "dist/js/main.js",
-        footer: { js: "//# sourceURL=VesktopMain" }
+        footer: { js: "//# sourceURL=HearthMain" }
     }),
     createContext({
         ...NodeCommonOpts,
@@ -109,29 +109,29 @@ await Promise.all([
         ...NodeCommonOpts,
         entryPoints: ["src/main/arrpc/worker.ts"],
         outfile: "dist/js/arRpcWorker.js",
-        footer: { js: "//# sourceURL=VesktopArRpcWorker" }
+        footer: { js: "//# sourceURL=HearthArRpcWorker" }
     }),
     createContext({
         ...NodeCommonOpts,
         entryPoints: ["src/preload/index.ts"],
         outfile: "dist/js/preload.js",
-        footer: { js: "//# sourceURL=VesktopPreload" }
+        footer: { js: "//# sourceURL=HearthPreload" }
     }),
     createContext({
         ...NodeCommonOpts,
         entryPoints: ["src/preload/splash.ts"],
         outfile: "dist/js/splashPreload.js",
-        footer: { js: "//# sourceURL=VesktopSplashPreload" }
+        footer: { js: "//# sourceURL=HearthSplashPreload" }
     }),
     createContext({
         ...NodeCommonOpts,
         entryPoints: ["src/preload/updater.ts"],
         outfile: "dist/js/updaterPreload.js",
-        footer: { js: "//# sourceURL=VesktopUpdaterPreload" }
+        footer: { js: "//# sourceURL=HearthUpdaterPreload" }
     }),
     createContext({
         ...CommonOpts,
-        globalName: "Vesktop",
+        globalName: "Hearth",
         entryPoints: ["src/renderer/index.ts"],
         outfile: "dist/js/renderer.js",
         format: "iife",
@@ -140,7 +140,7 @@ await Promise.all([
         jsxFragment: "VencordFragment",
         external: ["@vencord/types/*"],
         plugins: [vencordDep, includeDirPlugin("patches", "src/renderer/patches")],
-        footer: { js: "//# sourceURL=VesktopRenderer" }
+        footer: { js: "window.Vesktop = Hearth;\n//# sourceURL=HearthRenderer" }
     })
 ]);
 

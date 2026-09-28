@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -12,10 +12,10 @@ import { SplashProps } from "shared/browserWinProperties";
 
 import { autoStart } from "./autoStart";
 import { DATA_DIR } from "./constants";
+import { loadView } from "./hearthStatic";
 import { createWindows } from "./mainWindow";
 import { Settings, State } from "./settings";
 import { makeLinksOpenExternally } from "./utils/makeLinksOpenExternally";
-import { loadView } from "./vesktopStatic";
 
 interface Data {
     discordBranch: "stable" | "canary" | "ptb";

@@ -1,6 +1,6 @@
 {
-    "name": "libvesktop",
-    "main": "build/Release/vesktop.node",
+    "name": "libhearth",
+    "main": "build/Release/hearth.node",
     "types": "index.d.ts",
     "devDependencies": {
         "node-addon-api": "^8.5.0",

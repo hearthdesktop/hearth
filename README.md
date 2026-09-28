@@ -56,16 +56,16 @@ pnpm package --linux pacman
 pnpm package:dir
 ```
 
-## Building LibVesktop from Source
+## Building LibHearth from Source
 
-This is a small C++ helper library Hearth uses on Linux to emit D-Bus events. It keeps its upstream name. By default,
+This is a small C++ helper library Hearth uses on Linux to emit D-Bus events. By default,
 prebuilt binaries for x64 and arm64 are used.
 
 If you want to build it from source:
 1. Install build dependencies:
     - Debian/Ubuntu: `apt install build-essential python3 curl pkg-config libglib2.0-dev`
     - Fedora: `dnf install @c-development @development-tools python3 curl pkgconf-pkg-config glib2-devel`
-2. Run `pnpm buildLibVesktop`
+2. Run `pnpm buildLibHearth`
 3. From now on, building Hearth will use your own build
 
 ## Game Capture (Linux)

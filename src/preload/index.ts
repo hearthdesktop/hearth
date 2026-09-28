@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -7,9 +7,11 @@
 import { contextBridge, ipcRenderer, webFrame } from "electron/renderer";
 
 import { IpcEvents } from "../shared/IpcEvents";
-import { VesktopNative } from "./VesktopNative";
+import { HearthNative } from "./HearthNative";
 
-contextBridge.exposeInMainWorld("VesktopNative", VesktopNative);
+contextBridge.exposeInMainWorld("HearthNative", HearthNative);
+// Vencord's renderer calls into the host through this name
+contextBridge.exposeInMainWorld("VesktopNative", HearthNative);
 
 // While sandboxed, Electron "polyfills" these APIs as local variables.
 // We have to pass them as arguments as they are not global
@@ -23,4 +25,4 @@ Function(
 )(require, Buffer, process, clearImmediate, setImmediate);
 
 webFrame.executeJavaScript(ipcRenderer.sendSync(IpcEvents.GET_VENCORD_RENDERER_SCRIPT));
-webFrame.executeJavaScript(ipcRenderer.sendSync(IpcEvents.GET_VESKTOP_RENDERER_SCRIPT));
+webFrame.executeJavaScript(ipcRenderer.sendSync(IpcEvents.GET_HEARTH_RENDERER_SCRIPT));

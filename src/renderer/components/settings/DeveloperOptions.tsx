@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2025 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -25,8 +25,8 @@ function openDeveloperOptionsModal(settings: Settings) {
                 Debugging
             </Heading>
             <div className={cl("button-grid")}>
-                <Button onClick={() => VesktopNative.debug.launchGpu()}>Open chrome://gpu</Button>
-                <Button onClick={() => VesktopNative.debug.launchWebrtcInternals()}>
+                <Button onClick={() => HearthNative.debug.launchGpu()}>Open chrome://gpu</Button>
+                <Button onClick={() => HearthNative.debug.launchWebrtcInternals()}>
                     Open chrome://webrtc-internals
                 </Button>
             </div>
@@ -36,7 +36,7 @@ function openDeveloperOptionsModal(settings: Settings) {
 
 const VencordLocationPicker: SettingsComponent = ({ settings }) => {
     const forceUpdate = useForceUpdater();
-    const usingCustomVencordDir = VesktopNative.fileManager.isUsingCustomVencordDir();
+    const usingCustomVencordDir = HearthNative.fileManager.isUsingCustomVencordDir();
 
     return (
         <>
@@ -47,7 +47,7 @@ const VencordLocationPicker: SettingsComponent = ({ settings }) => {
                         variant="link"
                         onClick={e => {
                             e.preventDefault();
-                            VesktopNative.fileManager.showCustomVencordDir();
+                            HearthNative.fileManager.showCustomVencordDir();
                         }}
                     >
                         a custom location
@@ -59,7 +59,7 @@ const VencordLocationPicker: SettingsComponent = ({ settings }) => {
             <div className={cl("button-grid")}>
                 <Button
                     onClick={async () => {
-                        const choice = await VesktopNative.fileManager.selectVencordDir();
+                        const choice = await HearthNative.fileManager.selectVencordDir();
                         switch (choice) {
                             case "cancelled":
                                 break;
@@ -87,7 +87,7 @@ const VencordLocationPicker: SettingsComponent = ({ settings }) => {
                 <Button
                     variant="dangerPrimary"
                     onClick={async () => {
-                        await VesktopNative.fileManager.selectVencordDir(null);
+                        await HearthNative.fileManager.selectVencordDir(null);
                         forceUpdate();
                     }}
                 >

@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2025 Vendicated and Vesktop contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -9,8 +9,8 @@ import { useAwaiter } from "@vencord/types/utils";
 
 import { cl } from "./Settings";
 
-export function OutdatedVesktopWarning() {
-    const [isOutdated] = useAwaiter(VesktopNative.app.isOutdated);
+export function OutdatedHearthWarning() {
+    const [isOutdated] = useAwaiter(HearthNative.app.isOutdated);
 
     if (!isOutdated) return null;
 
@@ -19,7 +19,7 @@ export function OutdatedVesktopWarning() {
             <HeadingTertiary>Hearth is out of date!</HeadingTertiary>
             <Paragraph>Staying up to date is important for security and stability.</Paragraph>
 
-            <Button onClick={() => VesktopNative.app.openUpdater()} variant="secondary">
+            <Button onClick={() => HearthNative.app.openUpdater()} variant="secondary">
                 Open Updater
             </Button>
         </Card>

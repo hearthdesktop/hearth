@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2025 Vendicated and Vesktop contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -21,7 +21,7 @@ addPatch({
 
     flashFrame() {
         if (Settings.store.enableTaskbarFlashing) {
-            VesktopNative.win.flashFrame(true);
+            HearthNative.win.flashFrame(true);
         }
     }
 });

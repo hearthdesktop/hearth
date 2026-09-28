@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -10,15 +10,15 @@ import { basename, dirname, join } from "path";
 
 import { CommandLine } from "./cli";
 
-const vesktopDir = dirname(process.execPath);
+const appDir = dirname(process.execPath);
 
 export const PORTABLE =
     process.platform === "win32" &&
     !process.execPath.toLowerCase().endsWith("electron.exe") &&
-    !existsSync(join(vesktopDir, "Uninstall Hearth.exe"));
+    !existsSync(join(appDir, "Uninstall Hearth.exe"));
 
 export const DATA_DIR =
-    process.env.VENCORD_USER_DATA_DIR || (PORTABLE ? join(vesktopDir, "Data") : join(app.getPath("userData")));
+    process.env.VENCORD_USER_DATA_DIR || (PORTABLE ? join(appDir, "Data") : join(app.getPath("userData")));
 
 // caches are rebuilt on their own, and copied Singleton* links would point at a running Vesktop's lock
 const SKIP_ON_MIGRATION = new Set([

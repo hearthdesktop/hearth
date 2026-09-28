@@ -1,7 +1,5 @@
-# Dockerfile for building both x64 and arm64 on an old distro for maximum compatibility.
-
-#  ubuntu20 is dead but debian11 is still supported for now
-FROM debian:11
+# Builds x64 and arm64 on the oldest still-supported Debian, for the widest glibc compatibility
+FROM debian:12
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN dpkg --add-architecture arm64

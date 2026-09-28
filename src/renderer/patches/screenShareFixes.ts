@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -11,7 +11,7 @@ import { createGameCaptureStream } from "renderer/patches/gameCapture";
 import { State } from "renderer/settings";
 import { isLinux, waitForVirtmicDevice } from "renderer/utils";
 
-const logger = new Logger("VesktopStreamFixes");
+const logger = new Logger("HearthStreamFixes");
 
 if (isLinux) {
     const original = navigator.mediaDevices.getDisplayMedia;
@@ -29,14 +29,14 @@ if (isLinux) {
     navigator.mediaDevices.getDisplayMedia = async function (opts) {
         // Offer game capture first, but only when a game is actually running with
         // the capture layer loaded - otherwise nothing about this flow changes.
-        const games = await VesktopNative.gameCapture.list().catch(() => []);
+        const games = await HearthNative.gameCapture.list().catch(() => []);
         if (games.length) {
             const pick = await openGameCapturePicker(games).catch(() => null);
             if (!pick) {
-                VesktopNative.gameCapture.stop();
+                HearthNative.gameCapture.stop();
                 throw new DOMException("Permission denied", "NotAllowedError");
             }
-            if (pick.type === "desktop") VesktopNative.gameCapture.stop();
+            if (pick.type === "desktop") HearthNative.gameCapture.stop();
 
             if (pick.type === "game") {
                 // a small live capture drives the preview while the settings modal is
@@ -59,7 +59,7 @@ if (isLinux) {
                     streamSettings = await openScreenSharePicker(
                         [
                             {
-                                id: `vesktop-game:${pick.exe}`,
+                                id: `hearth-game:${pick.exe}`,
                                 name: pick.exe,
                                 url: "",
                                 stream: preview ?? undefined,
@@ -75,11 +75,11 @@ if (isLinux) {
                     // stop() on a generator track doesn't necessarily fire "ended",
                     // so tell the capture host directly rather than relying on it
                     preview?.getTracks().forEach(t => t.stop());
-                    if (preview) VesktopNative.gameCapture.stop();
+                    if (preview) HearthNative.gameCapture.stop();
                 }
 
                 if (!streamSettings) {
-                    VesktopNative.gameCapture.stop();
+                    HearthNative.gameCapture.stop();
                     throw new DOMException("Permission denied", "NotAllowedError");
                 }
 

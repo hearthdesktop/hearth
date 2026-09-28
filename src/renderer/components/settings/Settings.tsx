@@ -1,5 +1,5 @@
 /*
- * Vesktop, a desktop app aiming to give you a snappier Discord Experience
+ * Hearth, a desktop app aiming to give you a snappier Discord Experience
  * Copyright (c) 2023 Vendicated and Vencord contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -16,10 +16,10 @@ import { isLinux, isMac } from "renderer/utils";
 import { AutoStartToggle } from "./AutoStartToggle";
 import { DeveloperOptionsButton } from "./DeveloperOptions";
 import { DiscordBranchPicker } from "./DiscordBranchPicker";
+import { HearthSettingsSwitch } from "./HearthSettingsSwitch";
 import { NotificationBadgeToggle } from "./NotificationBadgeToggle";
-import { OutdatedVesktopWarning } from "./OutdatedVesktopWarning";
+import { OutdatedHearthWarning } from "./OutdatedHearthWarning";
 import { UserAssetsButton } from "./UserAssets";
-import { VesktopSettingsSwitch } from "./VesktopSettingsSwitch";
 import { WindowsTransparencyControls } from "./WindowsTransparencyControls";
 
 interface BooleanSetting {
@@ -175,7 +175,7 @@ function SettingsSections() {
                     if (invisible?.()) return null;
 
                     return (
-                        <VesktopSettingsSwitch
+                        <HearthSettingsSwitch
                             title={title}
                             description={description}
                             disabled={disabled?.()}
@@ -197,7 +197,7 @@ export default ErrorBoundary.wrap(
     function SettingsUI() {
         return (
             <section>
-                <OutdatedVesktopWarning />
+                <OutdatedHearthWarning />
                 <SettingsSections />
             </section>
         );
