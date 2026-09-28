@@ -1,0 +1,86 @@
+{
+    "generatedAt": "2026-09-28T23:44:50.919Z",
+    "upstream": "Vencord/Vesktop",
+    "commitsAhead": 22,
+    "features": [
+        {
+            "sha": "d03b7fbec052fd6f5239a790e1764b1bfe40e8b4",
+            "scope": "game capture",
+            "summary": "Preselect the game's audio, surface venmic failures",
+            "date": "2026-09-25T00:51:19+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/d03b7fbec052fd6f5239a790e1764b1bfe40e8b4"
+        },
+        {
+            "sha": "126188fb3763fe888294b5c5d5cc643134b56606",
+            "scope": "game capture",
+            "summary": "Live preview instead of a frozen frame",
+            "date": "2026-09-25T00:51:08+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/126188fb3763fe888294b5c5d5cc643134b56606"
+        },
+        {
+            "sha": "dcaf325896ed54414c1aac4045677a98619b777e",
+            "scope": "linux",
+            "summary": "Add game capture as a screenshare source",
+            "date": "2026-09-25T00:49:55+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/dcaf325896ed54414c1aac4045677a98619b777e"
+        }
+    ],
+    "fixes": [
+        {
+            "sha": "8a897d7c3bffc2b2c8e40e9f16c634242ca09762",
+            "scope": "game capture",
+            "summary": "Port the game picker to the new modal API",
+            "date": "2026-09-28T21:12:15+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/8a897d7c3bffc2b2c8e40e9f16c634242ca09762"
+        },
+        {
+            "sha": "4fc94a2e9c3a5b5cc5d377e9ea70aee3c7d892ee",
+            "scope": "game capture",
+            "summary": "Stop shrinking the capture on top of Discord's downscale",
+            "date": "2026-09-28T21:12:15+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/4fc94a2e9c3a5b5cc5d377e9ea70aee3c7d892ee"
+        },
+        {
+            "sha": "3bb908a84752af6302e4502d0a6efa544eaf6c2d",
+            "scope": "game capture",
+            "summary": "Only hold the capture socket while it's actually needed",
+            "date": "2026-09-25T00:51:19+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/3bb908a84752af6302e4502d0a6efa544eaf6c2d"
+        },
+        {
+            "sha": "12cf784f0b13563e67a1d45b58fd7249f8f0923a",
+            "scope": "game capture",
+            "summary": "Store the audio preselection in the shape the picker uses",
+            "date": "2026-09-25T00:51:19+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/12cf784f0b13563e67a1d45b58fd7249f8f0923a"
+        },
+        {
+            "sha": "d9ec70532f5eae8f9946bf8c81aa2dee6cfa12b4",
+            "scope": "audio",
+            "summary": "Don't apply speaker filters to an explicitly picked source",
+            "date": "2026-09-25T00:51:19+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/d9ec70532f5eae8f9946bf8c81aa2dee6cfa12b4"
+        },
+        {
+            "sha": "77d84816cf2a8c40de053288f34683c90c50ba14",
+            "scope": "screenshare",
+            "summary": "Wait for the virtmic device before giving up on audio",
+            "date": "2026-09-25T00:51:19+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/77d84816cf2a8c40de053288f34683c90c50ba14"
+        },
+        {
+            "sha": "bf7fb5d62fdf97c440945a082b9630df21eb4fda",
+            "scope": "game capture",
+            "summary": "Reallocate on size change, real preview, settings toggle",
+            "date": "2026-09-25T00:51:08+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/bf7fb5d62fdf97c440945a082b9630df21eb4fda"
+        },
+        {
+            "sha": "19e9cc087431bed3f405eb885fae5918d54f88be",
+            "scope": "game capture",
+            "summary": "Keep the socket bound, and style the picker",
+            "date": "2026-09-25T00:49:55+03:00",
+            "url": "https://github.com/hearthdesktop/hearth/commit/19e9cc087431bed3f405eb885fae5918d54f88be"
+        }
+    ]
+}
