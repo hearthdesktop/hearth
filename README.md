@@ -1,8 +1,10 @@
-<img src="build/icon.svg" alt="" width="96" align="right" />
+<p align="center">
+    <img src="build/icon.svg" alt="" width="128" />
+</p>
 
-# Hearth
+<h1 align="center">Hearth</h1>
 
-Hearth is a custom Discord desktop app, forked from [Vesktop](https://github.com/Vencord/Vesktop).
+<p align="center">A custom Discord desktop app, forked from <a href="https://github.com/Vencord/Vesktop">Vesktop</a>.</p>
 
 **Main features**:
 - Vencord preinstalled
