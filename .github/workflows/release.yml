@@ -2,24 +2,61 @@ name: Release
 
 on:
     push:
-        tags:
-            - v*
+        branches:
+            - release
     workflow_dispatch:
 
+concurrency:
+    group: release
+
+permissions:
+    contents: write
+
 jobs:
-    release:
+    prepare:
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.version.outputs.version }}
+            tag: ${{ steps.version.outputs.tag }}
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Read the version from package.json
+              id: version
+              run: |
+                  version="$(jq -r .version package.json)"
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
+                  echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+            - name: Refuse to release a version twice
+              run: |
+                  if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+                      echo "::error::$TAG is already released. Bump the version in package.json on main first."
+                      exit 1
+                  fi
+              env:
+                  TAG: ${{ steps.version.outputs.tag }}
+
+            - name: Create a draft release
+              run: gh release view "$TAG" > /dev/null 2>&1 || gh release create "$TAG" --draft --target "$GITHUB_SHA" --title "$TAG" --generate-notes
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  TAG: ${{ steps.version.outputs.tag }}
+
+    build:
+        needs: prepare
         runs-on: ${{ matrix.os }}
 
         strategy:
+            fail-fast: false
             matrix:
-                os: [macos-latest, ubuntu-latest, windows-latest]
                 include:
-                    - os: macos-latest
-                      platform: mac
                     - os: ubuntu-latest
                       platform: linux
                     - os: windows-latest
                       platform: windows
+                    - os: macos-latest
+                      platform: mac
 
         steps:
             - uses: actions/checkout@v7
@@ -34,26 +71,102 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
+            - name: Build vkcapture for x64 and arm64
+              if: matrix.platform == 'linux'
+              run: |
+                  pnpm -C packages/vkcapture install --frozen-lockfile
+                  cd packages/vkcapture
+                  sh build.sh
+
             - name: Build
               run: pnpm build
 
-            - name: Run Electron Builder
-              if: ${{ matrix.platform != 'mac' }}
-              run: |
-                  pnpm electron-builder --${{ matrix.platform }} --publish always
+            - name: Package and upload
+              if: matrix.platform != 'mac'
+              run: pnpm electron-builder --${{ matrix.platform }} --publish always
               env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_TOKEN: ${{ github.token }}
 
-            - name: Run Electron Builder
-              if: ${{ matrix.platform == 'mac' }}
+            - name: Check for Apple signing credentials
+              if: matrix.platform == 'mac'
+              id: apple
+              run: echo "available=${{ secrets.APPLE_SIGNING_CERT != '' }}" >> "$GITHUB_OUTPUT"
+
+            - name: Package and upload (signed and notarized)
+              if: matrix.platform == 'mac' && steps.apple.outputs.available == 'true'
               run: |
                   echo "$API_KEY" > apple.p8
-                  pnpm electron-builder --${{ matrix.platform }} --publish always
+                  pnpm electron-builder --mac --publish always
               env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_TOKEN: ${{ github.token }}
                   CSC_LINK: ${{ secrets.APPLE_SIGNING_CERT }}
                   CSC_KEY_PASSWORD: ${{ secrets.APPLE_SIGNING_CERT_PASSWORD }}
                   API_KEY: ${{ secrets.APPLE_API_KEY }}
                   APPLE_API_KEY: apple.p8
                   APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
                   APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+
+            - name: Package and upload (unsigned)
+              if: matrix.platform == 'mac' && steps.apple.outputs.available != 'true'
+              run: pnpm electron-builder --mac --publish always -c.mac.notarize=false
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  CSC_IDENTITY_AUTO_DISCOVERY: false
+
+    publish:
+        needs: [prepare, build]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Publish the release
+              run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  TAG: ${{ needs.prepare.outputs.tag }}
+
+    aur:
+        needs: [prepare, publish]
+        runs-on: ubuntu-latest
+        container: archlinux:base-devel
+        steps:
+            - name: Check for the AUR key
+              id: key
+              run: |
+                  echo "available=${{ secrets.AUR_SSH_PRIVATE_KEY != '' }}" >> "$GITHUB_OUTPUT"
+                  [ "${{ secrets.AUR_SSH_PRIVATE_KEY != '' }}" = true ] || echo "::warning::AUR_SSH_PRIVATE_KEY is not set, skipping the AUR update"
+
+            - uses: actions/checkout@v7
+              if: steps.key.outputs.available == 'true'
+
+            - name: Update hearth-bin
+              if: steps.key.outputs.available == 'true'
+              run: |
+                  pacman -Syu --noconfirm --needed git openssh jq
+                  bash packaging/aur/publish.sh "$VERSION"
+              env:
+                  VERSION: ${{ needs.prepare.outputs.version }}
+                  AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+
+    copr:
+        needs: [prepare, publish]
+        runs-on: ubuntu-latest
+        container: fedora:latest
+        steps:
+            - name: Check for the COPR config
+              id: config
+              run: |
+                  ok="${{ secrets.COPR_CONFIG != '' && vars.COPR_PROJECT != '' }}"
+                  echo "available=$ok" >> "$GITHUB_OUTPUT"
+                  [ "$ok" = true ] || echo "::warning::COPR_CONFIG or COPR_PROJECT is not set, skipping the COPR build"
+
+            - uses: actions/checkout@v7
+              if: steps.config.outputs.available == 'true'
+
+            - name: Submit the COPR build
+              if: steps.config.outputs.available == 'true'
+              run: |
+                  dnf install -y copr-cli rpm-build rpmdevtools
+                  bash packaging/copr/publish.sh "$VERSION"
+              env:
+                  VERSION: ${{ needs.prepare.outputs.version }}
+                  COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
+                  COPR_PROJECT: ${{ vars.COPR_PROJECT }}

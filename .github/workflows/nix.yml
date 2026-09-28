@@ -1,0 +1,32 @@
+name: nix
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - package.json
+            - pnpm-lock.yaml
+            - flake.nix
+            - flake.lock
+            - packaging/nix/**
+    pull_request:
+        branches:
+            - main
+        paths:
+            - package.json
+            - pnpm-lock.yaml
+            - flake.nix
+            - flake.lock
+            - packaging/nix/**
+
+jobs:
+    flake:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+            - uses: cachix/install-nix-action@v31
+
+            # a pnpm-lock.yaml change needs a new pnpmDeps hash in packaging/nix/package.nix; the failure prints it
+            - name: Build the flake
+              run: nix build .#hearth -L

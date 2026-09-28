@@ -16,7 +16,11 @@ Hearth is a custom Discord desktop app, forked from [Vesktop](https://github.com
 
 ## Installing
 
-Download the latest build for your system from the [releases page](https://github.com/hearthdesktop/hearth/releases).
+- **Windows, macOS, AppImage, deb, rpm**: download the latest build from the
+  [releases page](https://github.com/hearthdesktop/hearth/releases)
+- **Arch Linux** (AUR): `yay -S hearth-bin`
+- **Nix**: `nix run github:hearthdesktop/hearth`, or add the flake to your configuration and install
+  `inputs.hearth.packages.${pkgs.system}.default`
 
 Coming from Vesktop? On its first launch Hearth copies your Vesktop data over, so you stay logged in and keep your
 settings. Your Vesktop install is left untouched.

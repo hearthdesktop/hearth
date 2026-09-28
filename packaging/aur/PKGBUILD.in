@@ -1,0 +1,26 @@
+# Maintainer: @MAINTAINER@
+
+pkgname=hearth-bin
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc="Custom Discord desktop app with Vencord preinstalled, forked from Vesktop"
+arch=('x86_64' 'aarch64')
+url="https://github.com/hearthdesktop/hearth"
+license=('GPL-3.0-or-later')
+depends=('alsa-lib' 'gtk3' 'libglvnd' 'libnotify' 'libxss' 'libxtst' 'nss' 'xdg-utils')
+optdepends=('obs-vkcapture: share games through game capture'
+            'pipewire: screenshare audio')
+provides=('hearth')
+conflicts=('hearth')
+options=('!strip' '!debug')
+source_x86_64=("${url}/releases/download/v${pkgver}/hearth_${pkgver}_amd64.deb")
+source_aarch64=("${url}/releases/download/v${pkgver}/hearth_${pkgver}_arm64.deb")
+sha256sums_x86_64=('@SHA256_X86_64@')
+sha256sums_aarch64=('@SHA256_AARCH64@')
+
+package() {
+    bsdtar -xf data.tar.xz -C "$pkgdir"
+    rm -rf "$pkgdir/usr/share/doc"
+    install -d "$pkgdir/usr/bin"
+    ln -s /opt/Hearth/hearth "$pkgdir/usr/bin/hearth"
+}

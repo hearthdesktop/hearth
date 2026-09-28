@@ -1,0 +1,43 @@
+%global debug_package %{nil}
+%global __strip /bin/true
+%global _build_id_links none
+
+Name:           hearth
+Version:        @VERSION@
+Release:        1%{?dist}
+Summary:        Custom Discord desktop app with Vencord preinstalled, forked from Vesktop
+License:        GPL-3.0-or-later
+URL:            https://github.com/hearthdesktop/hearth
+Source0:        %{url}/releases/download/v%{version}/hearth-%{version}.x86_64.rpm
+Source1:        %{url}/releases/download/v%{version}/hearth-%{version}.aarch64.rpm
+
+ExclusiveArch:  x86_64 aarch64
+AutoReqProv:    no
+BuildRequires:  cpio
+Requires:       alsa-lib gtk3 libnotify libXScrnSaver libXtst libglvnd-egl libglvnd-gles nss xdg-utils
+Recommends:     pipewire
+Suggests:       obs-vkcapture
+
+%description
+Hearth is a custom Discord desktop app with Vencord preinstalled, forked from
+Vesktop. On Linux it can share a fullscreen game through game capture without
+losing direct scanout.
+
+%prep
+%setup -q -c -T
+%ifarch x86_64
+rpm2cpio %{SOURCE0} | cpio -idm --quiet
+%else
+rpm2cpio %{SOURCE1} | cpio -idm --quiet
+%endif
+
+%install
+install -d %{buildroot}%{_bindir}
+cp -a opt usr %{buildroot}/
+ln -s /opt/Hearth/hearth %{buildroot}%{_bindir}/hearth
+
+%files
+/opt/Hearth
+%{_bindir}/hearth
+%{_datadir}/applications/hearth.desktop
+%{_datadir}/icons/hicolor/scalable/apps/hearth.svg
