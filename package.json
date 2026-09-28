@@ -1,6 +1,6 @@
 {
     "name": "hearth",
-    "version": "1.6.7",
+    "version": "1.0.0",
     "private": true,
     "description": "Hearth is a custom Discord desktop app",
     "keywords": [],
