@@ -1,23 +1,25 @@
-# Vesktop
+<img src="build/icon.svg" alt="" width="96" align="right" />
 
-Vesktop is a custom Discord desktop app
+# Hearth
+
+Hearth is a custom Discord desktop app, forked from [Vesktop](https://github.com/Vencord/Vesktop).
 
 **Main features**:
 - Vencord preinstalled
 - Much more lightweight and faster than the official Discord app
 - Linux Screenshare with sound & wayland
+- Game capture on Linux: share a fullscreen game without losing direct scanout
 - Much better privacy, since Discord has no access to your system
 
 **Not yet supported**:
 - Global Keybinds
-- see the [Roadmap](https://github.com/Vencord/Vesktop/issues/324)
-
-![](https://github.com/Vencord/Vesktop/assets/45497981/8608a899-96a9-4027-9725-2cb02ba189fd)
-![](https://github.com/Vencord/Vesktop/assets/45497981/8701e5de-52c4-4346-a990-719cb971642e)
 
 ## Installing
 
-Visit https://vesktop.dev/install
+Download the latest build for your system from the [releases page](https://github.com/hearthdesktop/hearth/releases).
+
+Coming from Vesktop? On its first launch Hearth copies your Vesktop data over, so you stay logged in and keep your
+settings. Your Vesktop install is left untouched.
 
 ## Building from Source
 
@@ -29,8 +31,8 @@ You need to have the following dependencies installed:
 Packaging will create builds in the dist/ folder
 
 ```sh
-git clone https://github.com/Vencord/Vesktop
-cd Vesktop
+git clone https://github.com/hearthdesktop/hearth
+cd hearth
 
 # Install Dependencies
 pnpm i
@@ -50,14 +52,15 @@ pnpm package:dir
 
 ## Building LibVesktop from Source
 
-This is a small C++ helper library Vesktop uses on Linux to emit D-Bus events. By default, prebuilt binaries for x64 and arm64 are used.
+This is a small C++ helper library Hearth uses on Linux to emit D-Bus events. It keeps its upstream name. By default,
+prebuilt binaries for x64 and arm64 are used.
 
 If you want to build it from source:
 1. Install build dependencies:
     - Debian/Ubuntu: `apt install build-essential python3 curl pkg-config libglib2.0-dev`
     - Fedora: `dnf install @c-development @development-tools python3 curl pkgconf-pkg-config glib2-devel`
 2. Run `pnpm buildLibVesktop`
-3. From now on, building Vesktop will use your own build
+3. From now on, building Hearth will use your own build
 
 ## Game Capture (Linux)
 
@@ -76,9 +79,9 @@ Once a game is running that way, hitting Go Live offers it as a source alongside
 screens and windows. The layer only loads at process start, so a game that was already running
 has to be restarted to show up.
 
-Only one program can consume the capture socket at a time. Vesktop only holds it while you're
+Only one program can consume the capture socket at a time. Hearth only holds it while you're
 picking a source or actively sharing, and lets go shortly afterwards, so OBS can capture normally
-the rest of the time. While a Vesktop game share is running, OBS' own Game Capture won't find
+the rest of the time. While a Hearth game share is running, OBS' own Game Capture won't find
 anything, and vice versa. Turning off Settings -> Game Capture releases it outright.
 
 ### Building vkcapture from Source
@@ -88,4 +91,8 @@ Prebuilt binaries for x64 and arm64 are used by default. To build it yourself:
     - Debian/Ubuntu: `apt install build-essential python3 curl pkg-config libegl1-mesa-dev libgles2-mesa-dev`
     - Fedora: `dnf install @c-development @development-tools python3 curl pkgconf-pkg-config mesa-libEGL-devel mesa-libGLES-devel`
 2. Run `pnpm buildVkCapture`
-3. From now on, building Vesktop will use your own build
+3. From now on, building Hearth will use your own build
+
+## License
+
+Hearth is licensed under the GNU General Public License v3.0 or later, like Vesktop. See [LICENSE](LICENSE).

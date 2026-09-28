@@ -28,8 +28,8 @@ const SettingsPlugin = Vencord.Plugins.plugins
 
 SettingsPlugin.customEntries.push({
     key: "vesktop",
-    title: "Vesktop",
-    panelTitle: "Vesktop Settings",
+    title: "Hearth",
+    panelTitle: "Hearth Settings",
     Component: SettingsUi,
     Icon: VesktopSettingsIcon
 });

@@ -52,7 +52,7 @@ if (isLinux) {
                     return null;
                 });
 
-                // reuse Vesktop's own settings step, so quality, content hint and
+                // reuse Hearth's own settings step, so quality, content hint and
                 // the venmic audio sources all behave exactly as they do normally
                 let streamSettings: Awaited<ReturnType<typeof openScreenSharePicker>> | null = null;
                 try {

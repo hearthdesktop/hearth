@@ -77,7 +77,7 @@ function initMenuBar(win: BrowserWindow) {
 
     const subMenu = [
         {
-            label: "About Vesktop",
+            label: "About Hearth",
             click: createAboutWindow
         },
         {
@@ -87,14 +87,14 @@ function initMenuBar(win: BrowserWindow) {
                 app.relaunch();
                 app.quit();
             },
-            toolTip: "Vesktop will automatically restart after this operation"
+            toolTip: "Hearth will automatically restart after this operation"
         },
         {
-            label: "Reset Vesktop",
+            label: "Reset Hearth",
             async click() {
                 await clearData(win);
             },
-            toolTip: "Vesktop will automatically restart after this operation"
+            toolTip: "Hearth will automatically restart after this operation"
         },
         {
             label: "Relaunch",
@@ -180,7 +180,7 @@ function initMenuBar(win: BrowserWindow) {
 
     const menuItems = [
         {
-            label: "Vesktop",
+            label: "Hearth",
             role: "appMenu",
             submenu: subMenu.filter(isTruthy)
         },
@@ -289,7 +289,7 @@ function initStaticTitle(win: BrowserWindow) {
 
     addSettingsListener("staticTitle", enabled => {
         if (enabled) {
-            win.setTitle("Vesktop");
+            win.setTitle("Hearth");
             win.on("page-title-updated", listener);
         } else {
             win.off("page-title-updated", listener);
@@ -382,7 +382,7 @@ function buildBrowserWindowOptions(): BrowserWindowConstructorOptions {
     }
 
     if (staticTitle) {
-        options.title = "Vesktop";
+        options.title = "Hearth";
     }
 
     if (process.platform === "darwin") {

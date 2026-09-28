@@ -5,8 +5,8 @@
  */
 
 import { app } from "electron";
-import { existsSync, mkdirSync } from "fs";
-import { dirname, join } from "path";
+import { cpSync, existsSync, mkdirSync } from "fs";
+import { basename, dirname, join } from "path";
 
 import { CommandLine } from "./cli";
 
@@ -15,11 +15,44 @@ const vesktopDir = dirname(process.execPath);
 export const PORTABLE =
     process.platform === "win32" &&
     !process.execPath.toLowerCase().endsWith("electron.exe") &&
-    !existsSync(join(vesktopDir, "Uninstall Vesktop.exe"));
+    !existsSync(join(vesktopDir, "Uninstall Hearth.exe"));
 
 export const DATA_DIR =
     process.env.VENCORD_USER_DATA_DIR || (PORTABLE ? join(vesktopDir, "Data") : join(app.getPath("userData")));
 
+// caches are rebuilt on their own, and copied Singleton* links would point at a running Vesktop's lock
+const SKIP_ON_MIGRATION = new Set([
+    "Cache",
+    "Code Cache",
+    "GPUCache",
+    "DawnGraphiteCache",
+    "DawnWebGPUCache",
+    "Crashpad",
+    "SingletonLock",
+    "SingletonSocket",
+    "SingletonCookie"
+]);
+
+function migrateFromVesktop() {
+    if (process.env.VENCORD_USER_DATA_DIR || PORTABLE) return;
+
+    const legacyDir = join(app.getPath("appData"), "vesktop");
+    const isFresh = !existsSync(join(DATA_DIR, "settings.json")) && !existsSync(join(DATA_DIR, "sessionData"));
+    if (!isFresh || !existsSync(legacyDir)) return;
+
+    try {
+        cpSync(legacyDir, DATA_DIR, {
+            recursive: true,
+            force: false,
+            filter: src => !SKIP_ON_MIGRATION.has(basename(src)) && !basename(src).startsWith(".org.chromium.")
+        });
+        console.log(`Migrated Vesktop data from ${legacyDir}`);
+    } catch (err) {
+        console.error("Failed to migrate Vesktop data:", err);
+    }
+}
+
+migrateFromVesktop();
 mkdirSync(DATA_DIR, { recursive: true });
 
 export const SESSION_DATA_DIR = join(DATA_DIR, "sessionData");
@@ -31,7 +64,7 @@ export const VENCORD_QUICKCSS_FILE = join(VENCORD_SETTINGS_DIR, "quickCss.css");
 export const VENCORD_SETTINGS_FILE = join(VENCORD_SETTINGS_DIR, "settings.json");
 export const VENCORD_THEMES_DIR = join(DATA_DIR, "themes");
 
-export const USER_AGENT = `Vesktop/${app.getVersion()} (https://github.com/Vencord/Vesktop)`;
+export const USER_AGENT = `Hearth/${app.getVersion()} (https://github.com/hearthdesktop/hearth)`;
 
 // dimensions shamelessly stolen from Discord Desktop :3
 export const MIN_WIDTH = 940;

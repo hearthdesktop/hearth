@@ -23,7 +23,7 @@ function ensureChild() {
     if (child) return childReady!;
 
     child = utilityProcess.fork(join(__dirname, "gameCaptureHost.js"), [], {
-        serviceName: "vesktop-game-capture"
+        serviceName: "hearth-game-capture"
     });
 
     childReady = new Promise<void>(resolve => {
@@ -66,7 +66,7 @@ function enabled() {
 }
 
 // Only one program can hold the capture socket, so sitting on it while idle
-// would stop OBS from capturing anything for as long as Vesktop is open. Hold
+// would stop OBS from capturing anything for as long as Hearth is open. Hold
 // it only around actual use, with a grace period so the picker -> preview ->
 // capture sequence doesn't make every game reconnect in the middle of it.
 const RELEASE_AFTER_IDLE_MS = 20_000;

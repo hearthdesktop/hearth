@@ -1,12 +1,12 @@
 {
-    "name": "vesktop",
+    "name": "hearth",
     "version": "1.6.7",
     "private": true,
-    "description": "Vesktop is a custom Discord desktop app",
+    "description": "Hearth is a custom Discord desktop app",
     "keywords": [],
-    "homepage": "https://vencord.dev/",
+    "homepage": "https://github.com/hearthdesktop/hearth",
     "license": "GPL-3.0-or-later",
-    "author": "Vendicated <vendicated@riseup.net>",
+    "author": "umceko <umutcevdetkocak@gmail.com>",
     "main": "dist/js/main.js",
     "scripts": {
         "build": "tsx scripts/build/build.mts",
@@ -66,9 +66,9 @@
         "pnpm": ">=11"
     },
     "build": {
-        "appId": "dev.vencord.vesktop",
-        "productName": "Vesktop",
-        "executableName": "vesktop",
+        "appId": "io.github.hearthdesktop.hearth",
+        "productName": "Hearth",
+        "executableName": "hearth",
         "files": [
             "!*",
             "!node_modules",
@@ -91,7 +91,7 @@
         "linux": {
             "icon": "build/icon.svg",
             "category": "Network",
-            "maintainer": "vendicated+vesktop@riseup.net",
+            "maintainer": "umutcevdetkocak@gmail.com",
             "target": [
                 {
                     "target": "deb",
@@ -124,13 +124,13 @@
             ],
             "desktop": {
                 "entry": {
-                    "Name": "Vesktop",
+                    "Name": "Hearth",
                     "GenericName": "Internet Messenger",
                     "Type": "Application",
                     "Categories": "Network;InstantMessaging;Chat;",
-                    "Keywords": "discord;vencord;electron;chat;",
+                    "Keywords": "discord;vencord;hearth;electron;chat;",
                     "MimeType": "x-scheme-handler/discord",
-                    "StartupWMClass": "vesktop"
+                    "StartupWMClass": "hearth"
                 }
             }
         },
@@ -200,7 +200,9 @@
             ]
         },
         "publish": {
-            "provider": "github"
+            "provider": "github",
+            "owner": "hearthdesktop",
+            "repo": "hearth"
         },
         "rpm": {
             "fpm": [
